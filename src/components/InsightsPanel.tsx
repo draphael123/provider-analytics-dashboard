@@ -175,9 +175,9 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Insights</h3>
-      <div className="space-y-3">
+    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Key Insights</h3>
+      <div className="space-y-4">
         {insights.map((insight, index) => {
           const Icon = insight.icon;
           const gradientColors = [
@@ -187,18 +187,31 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
             'from-amber-400 to-orange-500',
           ];
           const gradient = gradientColors[index % gradientColors.length];
+          
+          // Improved text colors for better contrast
+          const textColors = {
+            top: 'text-gray-900 dark:text-gray-100',
+            improved: 'text-gray-900 dark:text-gray-100',
+            attention: 'text-gray-900 dark:text-gray-100',
+            overall: 'text-gray-900 dark:text-gray-100',
+          };
+          
           return (
             <div
               key={index}
-              className={`p-4 rounded-lg border-2 shadow-md hover:shadow-lg transition-all ${insight.color} bg-gradient-to-br ${gradient} bg-opacity-10 dark:bg-opacity-20`}
+              className={`p-5 rounded-lg border-2 shadow-md hover:shadow-lg transition-all bg-white dark:bg-gray-800 ${insight.color.replace('text-', 'border-')}`}
             >
-              <div className="flex items-start gap-3">
-                <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient} text-white shadow-lg`}>
-                  <Icon className="h-5 w-5 flex-shrink-0" />
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-lg bg-gradient-to-br ${gradient} text-white shadow-lg flex-shrink-0`}>
+                  <Icon className="h-6 w-6" />
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm mb-1">{insight.title}</h4>
-                  <p className="text-sm">{insight.description}</p>
+                <div className="flex-1 min-w-0">
+                  <h4 className={`font-bold text-base mb-2 ${textColors[insight.type as keyof typeof textColors] || 'text-gray-900 dark:text-gray-100'}`}>
+                    {insight.title}
+                  </h4>
+                  <p className={`text-base leading-relaxed ${textColors[insight.type as keyof typeof textColors] || 'text-gray-700 dark:text-gray-300'}`}>
+                    {insight.description}
+                  </p>
                 </div>
               </div>
             </div>
