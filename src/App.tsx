@@ -20,6 +20,11 @@ import { SummaryCards } from './components/SummaryCards';
 import { LineChart } from './components/Charts/LineChart';
 import { BarChart } from './components/Charts/BarChart';
 import { ChartControls } from './components/Charts/ChartControls';
+import { ScatterChart } from './components/Charts/ScatterChart';
+import { AreaChart } from './components/Charts/AreaChart';
+import { StackedBarChart } from './components/Charts/StackedBarChart';
+import { PieChart } from './components/Charts/PieChart';
+import { GoalProgressChart } from './components/Charts/GoalProgressChart';
 import { DataTable } from './components/DataTable';
 import { ProviderRankingTable } from './components/ProviderRankingTable';
 import { HeatmapChart } from './components/Charts/HeatmapChart';
@@ -300,28 +305,61 @@ function App() {
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  {/* Line Chart */}
+                  {/* Line/Area Chart */}
                   <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
                     <div className="mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Week-over-Week Trend</h3>
-                  <ChartControls
-                    selectedMetric={selectedMetric}
-                    onMetricChange={setSelectedMetric}
-                  />
-                </div>
-                <LineChart
-                  data={lineChartData}
-                  selectedMetric={selectedMetric}
-                  selectedProviders={selectedProviders}
-                  allProviders={allProviders}
-                  showBenchmarks={true}
-                  benchmarkValues={benchmarkValues ? {
-                    average: benchmarkValues[selectedMetric].average,
-                    median: benchmarkValues[selectedMetric].median,
-                    topQuartile: benchmarkValues[selectedMetric].topQuartile,
-                  } : undefined}
-                />
-              </div>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Week-over-Week Trend</h3>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setLineChartType('line')}
+                            className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                              lineChartType === 'line'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            Line
+                          </button>
+                          <button
+                            onClick={() => setLineChartType('area')}
+                            className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                              lineChartType === 'area'
+                                ? 'bg-primary-600 text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            Area
+                          </button>
+                        </div>
+                      </div>
+                      <ChartControls
+                        selectedMetric={selectedMetric}
+                        onMetricChange={setSelectedMetric}
+                      />
+                    </div>
+                    {lineChartType === 'line' ? (
+                      <LineChart
+                        data={lineChartData}
+                        selectedMetric={selectedMetric}
+                        selectedProviders={selectedProviders}
+                        allProviders={allProviders}
+                        showBenchmarks={true}
+                        benchmarkValues={benchmarkValues ? {
+                          average: benchmarkValues[selectedMetric].average,
+                          median: benchmarkValues[selectedMetric].median,
+                          topQuartile: benchmarkValues[selectedMetric].topQuartile,
+                        } : undefined}
+                      />
+                    ) : (
+                      <AreaChart
+                        data={lineChartData}
+                        selectedMetric={selectedMetric}
+                        selectedProviders={selectedProviders}
+                        allProviders={allProviders}
+                      />
+                    )}
+                  </div>
 
                   {/* Bar Chart */}
                   <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
@@ -334,18 +372,60 @@ function App() {
                           onChange={(e) => setBarChartMetric(e.target.value as any)}
                           className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                         >
-                      <option value="totalVisits">Total Visits</option>
-                      <option value="visitsOver20Min">Visits Over 20 Min</option>
-                      <option value="percentOver20Min">% Over 20 Min</option>
-                    </select>
+                          <option value="totalVisits">Total Visits</option>
+                          <option value="visitsOver20Min">Visits Over 20 Min</option>
+                          <option value="percentOver20Min">% Over 20 Min</option>
+                        </select>
+                      </div>
+                    </div>
+                    <BarChart
+                      data={barChartData}
+                      selectedMetric={barChartMetric}
+                    />
                   </div>
                 </div>
-                <BarChart
-                  data={barChartData}
-                  selectedMetric={barChartMetric}
-                />
-              </div>
-            </div>
+
+                {/* Additional Visualizations */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  {/* Scatter Chart */}
+                  <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Correlation Analysis</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Total Visits vs % Over 20 Min - Identify relationships and outliers
+                    </p>
+                    <ScatterChart data={filteredData} />
+                  </div>
+
+                  {/* Stacked Bar Chart */}
+                  <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Visit Composition</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Stacked view showing visits under/over 20 minutes
+                    </p>
+                    <StackedBarChart data={filteredData} />
+                  </div>
+                </div>
+
+                {/* Goal Progress and Distribution */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  {/* Goal Progress Chart */}
+                  <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Goal Progress</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Provider performance vs 20% goal target
+                    </p>
+                    <GoalProgressChart data={filteredData} goalPercent={20} />
+                  </div>
+
+                  {/* Pie Chart */}
+                  <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Performance Distribution</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      Providers categorized by performance tier
+                    </p>
+                    <PieChart data={filteredData} />
+                  </div>
+                </div>
 
             {/* Heatmap and Distribution */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
