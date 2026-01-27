@@ -49,18 +49,32 @@ export function ProviderRankingTable({ data, onProviderSelect }: ProviderRanking
         ? (stat.visitsOver20Min / stat.totalVisits) * 100 
         : 0;
       
-      // Calculate trend (compare first half vs second half of data)
+      // Calculate week-over-week trend (compare most recent week vs previous week)
       const providerData = data.filter(d => d.provider === stat.provider);
       if (providerData.length > 1) {
-        const sorted = [...providerData].sort((a, b) => a.week.localeCompare(b.week));
-        const mid = Math.floor(sorted.length / 2);
-        const firstHalf = sorted.slice(0, mid);
-        const secondHalf = sorted.slice(mid);
+        // Sort by week chronologically
+        const sorted = [...providerData].sort((a, b) => {
+          const weekA = a.week.match(/(\d{1,2})\/(\d{1,2})/);
+          const weekB = b.week.match(/(\d{1,2})\/(\d{1,2})/);
+          if (!weekA || !weekB) return a.week.localeCompare(b.week);
+          
+          const monthA = parseInt(weekA[1]);
+          const dayA = parseInt(weekA[2]);
+          const monthB = parseInt(weekB[1]);
+          const dayB = parseInt(weekB[2]);
+          
+          if (monthA !== monthB) return monthA - monthB;
+          return dayA - dayB;
+        });
         
-        const firstAvg = firstHalf.reduce((sum, d) => sum + d.percentOver20Min, 0) / firstHalf.length;
-        const secondAvg = secondHalf.reduce((sum, d) => sum + d.percentOver20Min, 0) / secondHalf.length;
+        // Compare most recent week vs previous week
+        const recent = sorted[sorted.length - 1];
+        const previous = sorted[sorted.length - 2];
         
-        stat.trendValue = secondAvg - firstAvg;
+        const recentPercent = recent.totalVisits > 0 ? (recent.visitsOver20Min / recent.totalVisits) * 100 : 0;
+        const prevPercent = previous.totalVisits > 0 ? (previous.visitsOver20Min / previous.totalVisits) * 100 : 0;
+        
+        stat.trendValue = recentPercent - prevPercent; // Negative is good (decreasing)
         stat.trend = stat.trendValue > 1 ? 'up' : stat.trendValue < -1 ? 'down' : 'neutral';
       }
       

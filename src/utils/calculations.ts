@@ -24,7 +24,71 @@ export function calculateSummaryStats(
   let trend: 'up' | 'down' | 'neutral' = 'neutral';
   let trendValue = 0;
   
-  if (previousPeriodData && previousPeriodData.length > 0) {
+  // Calculate week-over-week trend for the team
+  if (data.length > 1) {
+    // Sort data by week chronologically
+    const sorted = [...data].sort((a, b) => {
+      const weekA = a.week.match(/(\d{1,2})\/(\d{1,2})/);
+      const weekB = b.week.match(/(\d{1,2})\/(\d{1,2})/);
+      if (!weekA || !weekB) return a.week.localeCompare(b.week);
+      
+      const monthA = parseInt(weekA[1]);
+      const dayA = parseInt(weekA[2]);
+      const monthB = parseInt(weekB[1]);
+      const dayB = parseInt(weekB[2]);
+      
+      if (monthA !== monthB) return monthA - monthB;
+      return dayA - dayB;
+    });
+    
+    // Group by week and calculate team average for each week
+    const weekStats = new Map<string, { totalVisits: number; visitsOver20: number }>();
+    sorted.forEach(item => {
+      const existing = weekStats.get(item.week);
+      if (existing) {
+        existing.totalVisits += item.totalVisits;
+        existing.visitsOver20 += item.visitsOver20Min;
+      } else {
+        weekStats.set(item.week, {
+          totalVisits: item.totalVisits,
+          visitsOver20: item.visitsOver20Min,
+        });
+      }
+    });
+    
+    const weekAverages = Array.from(weekStats.entries())
+      .map(([week, stats]) => ({
+        week,
+        percent: stats.totalVisits > 0 ? (stats.visitsOver20 / stats.totalVisits) * 100 : 0,
+      }))
+      .sort((a, b) => {
+        const weekA = a.week.match(/(\d{1,2})\/(\d{1,2})/);
+        const weekB = b.week.match(/(\d{1,2})\/(\d{1,2})/);
+        if (!weekA || !weekB) return a.week.localeCompare(b.week);
+        
+        const monthA = parseInt(weekA[1]);
+        const dayA = parseInt(weekA[2]);
+        const monthB = parseInt(weekB[1]);
+        const dayB = parseInt(weekB[2]);
+        
+        if (monthA !== monthB) return monthA - monthB;
+        return dayA - dayB;
+      });
+    
+    // Compare most recent week vs previous week
+    if (weekAverages.length >= 2) {
+      const recent = weekAverages[weekAverages.length - 1];
+      const previous = weekAverages[weekAverages.length - 2];
+      trendValue = recent.percent - previous.percent;
+      trend = trendValue > 0.5 ? 'up' : trendValue < -0.5 ? 'down' : 'neutral';
+    } else if (previousPeriodData && previousPeriodData.length > 0) {
+      // Fallback to previous period comparison if not enough weeks
+      const prevAvgPercent = previousPeriodData.reduce((sum, d) => sum + d.percentOver20Min, 0) / previousPeriodData.length;
+      trendValue = avgPercentOver20Min - prevAvgPercent;
+      trend = trendValue > 0.5 ? 'up' : trendValue < -0.5 ? 'down' : 'neutral';
+    }
+  } else if (previousPeriodData && previousPeriodData.length > 0) {
+    // Fallback to previous period comparison
     const prevAvgPercent = previousPeriodData.reduce((sum, d) => sum + d.percentOver20Min, 0) / previousPeriodData.length;
     trendValue = avgPercentOver20Min - prevAvgPercent;
     trend = trendValue > 0.5 ? 'up' : trendValue < -0.5 ? 'down' : 'neutral';
@@ -113,17 +177,32 @@ export function filterData(
     providerStats.forEach((stat, provider) => {
       stat.percentOver20 = stat.totalVisits > 0 ? (stat.visitsOver20 / stat.totalVisits) * 100 : 0;
       
-      // Calculate trend
+      // Calculate week-over-week trend (compare most recent week vs previous week)
       const providerData = filtered.filter(d => d.provider === provider);
       if (providerData.length > 1) {
-        const sorted = [...providerData].sort((a, b) => a.week.localeCompare(b.week));
-        const mid = Math.floor(sorted.length / 2);
-        const firstHalf = sorted.slice(0, mid);
-        const secondHalf = sorted.slice(mid);
+        // Sort by week chronologically
+        const sorted = [...providerData].sort((a, b) => {
+          const weekA = a.week.match(/(\d{1,2})\/(\d{1,2})/);
+          const weekB = b.week.match(/(\d{1,2})\/(\d{1,2})/);
+          if (!weekA || !weekB) return a.week.localeCompare(b.week);
+          
+          const monthA = parseInt(weekA[1]);
+          const dayA = parseInt(weekA[2]);
+          const monthB = parseInt(weekB[1]);
+          const dayB = parseInt(weekB[2]);
+          
+          if (monthA !== monthB) return monthA - monthB;
+          return dayA - dayB;
+        });
         
-        const firstAvg = firstHalf.reduce((sum, d) => sum + d.percentOver20Min, 0) / firstHalf.length;
-        const secondAvg = secondHalf.reduce((sum, d) => sum + d.percentOver20Min, 0) / secondHalf.length;
-        stat.trend = secondAvg - firstAvg;
+        // Compare most recent week vs previous week
+        const recent = sorted[sorted.length - 1];
+        const previous = sorted[sorted.length - 2];
+        
+        const recentPercent = recent.totalVisits > 0 ? (recent.visitsOver20Min / recent.totalVisits) * 100 : 0;
+        const prevPercent = previous.totalVisits > 0 ? (previous.visitsOver20Min / previous.totalVisits) * 100 : 0;
+        
+        stat.trend = recentPercent - prevPercent; // Negative is good (decreasing)
       }
     });
 

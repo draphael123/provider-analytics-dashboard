@@ -46,16 +46,31 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
       stat.visitsOver20Min = visitsOver20;
       stat.percentOver20Min = totalVisits > 0 ? (visitsOver20 / totalVisits) * 100 : 0;
 
-      // Calculate trend
+      // Calculate week-over-week trend (compare most recent week vs previous week)
       if (providerData.length > 1) {
-        const sorted = [...providerData].sort((a, b) => a.week.localeCompare(b.week));
-        const mid = Math.floor(sorted.length / 2);
-        const firstHalf = sorted.slice(0, mid);
-        const secondHalf = sorted.slice(mid);
+        // Sort by week chronologically
+        const sorted = [...providerData].sort((a, b) => {
+          const weekA = a.week.match(/(\d{1,2})\/(\d{1,2})/);
+          const weekB = b.week.match(/(\d{1,2})\/(\d{1,2})/);
+          if (!weekA || !weekB) return a.week.localeCompare(b.week);
+          
+          const monthA = parseInt(weekA[1]);
+          const dayA = parseInt(weekA[2]);
+          const monthB = parseInt(weekB[1]);
+          const dayB = parseInt(weekB[2]);
+          
+          if (monthA !== monthB) return monthA - monthB;
+          return dayA - dayB;
+        });
         
-        const firstAvg = firstHalf.reduce((sum, d) => sum + d.percentOver20Min, 0) / firstHalf.length;
-        const secondAvg = secondHalf.reduce((sum, d) => sum + d.percentOver20Min, 0) / secondHalf.length;
-        stat.trend = secondAvg - firstAvg;
+        // Compare most recent week vs previous week
+        const recent = sorted[sorted.length - 1];
+        const previous = sorted[sorted.length - 2];
+        
+        const recentPercent = recent.totalVisits > 0 ? (recent.visitsOver20Min / recent.totalVisits) * 100 : 0;
+        const prevPercent = previous.totalVisits > 0 ? (previous.visitsOver20Min / previous.totalVisits) * 100 : 0;
+        
+        stat.trend = recentPercent - prevPercent; // Negative is good (decreasing)
       }
 
       return stat;
@@ -63,15 +78,44 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
 
     const avgPercent = stats.reduce((sum, s) => sum + s.percentOver20Min, 0) / stats.length;
     
-    // Top Performers: Providers with LOWEST % over 20 minutes (best performers)
+    // Top Performers: Providers with FEWEST visits over 20 minutes (count, not percentage)
     const topPerformers = [...stats]
       .filter(s => s.totalVisits > 10)
-      .sort((a, b) => a.percentOver20Min - b.percentOver20Min)
+      .sort((a, b) => a.visitsOver20Min - b.visitsOver20Min)
       .slice(0, 3);
     
     // Most Improved: Providers with NEGATIVE trend (decreasing % over 20 minutes is good)
+    // Calculate week-over-week trend more accurately
     const mostImproved = [...stats]
-      .filter(s => s.trend < 0 && s.totalVisits > 10)
+      .filter(s => {
+        const providerData = data.filter(d => d.provider === s.provider);
+        if (providerData.length < 2) return false;
+        
+        // Sort by week chronologically
+        const sorted = [...providerData].sort((a, b) => {
+          const weekA = a.week.match(/(\d{1,2})\/(\d{1,2})/);
+          const weekB = b.week.match(/(\d{1,2})\/(\d{1,2})/);
+          if (!weekA || !weekB) return a.week.localeCompare(b.week);
+          
+          const monthA = parseInt(weekA[1]);
+          const dayA = parseInt(weekA[2]);
+          const monthB = parseInt(weekB[1]);
+          const dayB = parseInt(weekB[2]);
+          
+          if (monthA !== monthB) return monthA - monthB;
+          return dayA - dayB;
+        });
+        
+        // Compare most recent week vs previous week
+        const recent = sorted[sorted.length - 1];
+        const previous = sorted[sorted.length - 2];
+        
+        const recentPercent = recent.totalVisits > 0 ? (recent.visitsOver20Min / recent.totalVisits) * 100 : 0;
+        const prevPercent = previous.totalVisits > 0 ? (previous.visitsOver20Min / previous.totalVisits) * 100 : 0;
+        
+        s.trend = recentPercent - prevPercent;
+        return s.trend < 0 && s.totalVisits > 10;
+      })
       .sort((a, b) => a.trend - b.trend) // Most negative (best improvement)
       .slice(0, 3);
 
@@ -83,12 +127,12 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
 
     const insightsList: Array<{ type: string; icon: any; title: string; description: string; color: string }> = [];
 
-    if (topPerformers.length > 0 && topPerformers[0].percentOver20Min < 10) {
+    if (topPerformers.length > 0) {
       insightsList.push({
         type: 'top',
         icon: Award,
         title: 'Top Performers',
-        description: `${topPerformers.map(p => p.provider).join(', ')} ${topPerformers.length === 1 ? 'has' : 'have'} the lowest percentage of visits over 20 minutes (${topPerformers[0].percentOver20Min.toFixed(1)}%)`,
+        description: `${topPerformers.map(p => p.provider).join(', ')} ${topPerformers.length === 1 ? 'has' : 'have'} the fewest visits over 20 minutes (${topPerformers[0].visitsOver20Min} visit${topPerformers[0].visitsOver20Min === 1 ? '' : 's'})`,
         color: 'text-green-600 bg-green-50 border-green-200 dark:bg-green-900/30 dark:border-green-700',
       });
     }
