@@ -11,15 +11,6 @@ export function normalizeWeekLabel(week: string): string {
   return week;
 }
 
-export function sortWeeks(weeks: string[]): string[] {
-  return [...weeks].sort((a, b) => {
-    const dateA = extractDate(a);
-    const dateB = extractDate(b);
-    if (!dateA || !dateB) return a.localeCompare(b);
-    return dateA.getTime() - dateB.getTime();
-  });
-}
-
 function extractDate(weekStr: string): Date | null {
   const match = weekStr.match(/(\d{1,2})\/(\d{1,2})/);
   if (match) {
@@ -78,7 +69,7 @@ export function sortWeeks(weeks: string[]): string[] {
   
   // Create a map of week string to adjusted date
   const weekDateMap = new Map<string, Date>();
-  weeks.forEach((week, idx) => {
+  weeks.forEach((week) => {
     const date = extractDate(week);
     if (date) {
       const adjustedDate = adjustedDates[dates.indexOf(date)];

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ProviderWeekData } from '../types';
-import { TrendingUp, TrendingDown, Award, AlertCircle } from 'lucide-react';
+import { TrendingUp, Award, AlertCircle } from 'lucide-react';
 
 interface InsightsPanelProps {
   data: ProviderWeekData[];
