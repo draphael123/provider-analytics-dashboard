@@ -19,14 +19,18 @@ const metricLabels: Record<MetricType, string> = {
 };
 
 const colors = [
-  '#3b82f6', // blue
-  '#10b981', // green
+  '#3b82f6', // vibrant blue
+  '#10b981', // emerald green
   '#f59e0b', // amber
   '#ef4444', // red
-  '#8b5cf6', // purple
+  '#8b5cf6', // vibrant purple
   '#06b6d4', // cyan
   '#f97316', // orange
   '#ec4899', // pink
+  '#6366f1', // indigo
+  '#14b8a6', // teal
+  '#22c55e', // bright green
+  '#eab308', // yellow
 ];
 
 export function AreaChart({ data, selectedMetric, selectedProviders, allProviders }: AreaChartProps) {

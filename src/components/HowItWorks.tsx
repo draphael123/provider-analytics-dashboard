@@ -66,7 +66,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <div className="bg-gradient-to-br from-primary-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 border-b border-gray-200 dark:border-gray-800 py-12">
+    <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950 dark:to-purple-950 border-b-4 border-indigo-200 dark:border-indigo-800 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -85,7 +85,7 @@ export function HowItWorks() {
             return (
               <div
                 key={index}
-                className={`${feature.bgColor} rounded-lg p-6 border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg`}
+                className={`${feature.bgColor} rounded-lg p-6 border-2 border-opacity-50 dark:border-opacity-30 transition-all hover:shadow-xl hover:scale-105`}
               >
                 <div className="flex items-start gap-4">
                   <div className={`${feature.color} flex-shrink-0`}>
@@ -106,17 +106,25 @@ export function HowItWorks() {
         </div>
 
         {/* Benefits Section */}
-        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-8">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+        <div className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-indigo-950 rounded-lg shadow-lg border-2 border-indigo-200 dark:border-indigo-800 p-8">
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-6 text-center">
             Key Benefits
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {benefits.map((benefit, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-              >
-                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-primary-600 dark:bg-primary-400 mt-2"></div>
+            {benefits.map((benefit, index) => {
+              const benefitColors = [
+                'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border-blue-200 dark:border-blue-800',
+                'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 border-emerald-200 dark:border-emerald-800',
+                'bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 border-purple-200 dark:border-purple-800',
+                'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 border-amber-200 dark:border-amber-800',
+              ];
+              const dotColors = ['bg-blue-500', 'bg-emerald-500', 'bg-purple-500', 'bg-amber-500'];
+              return (
+                <div
+                  key={index}
+                  className={`flex items-start gap-4 p-4 rounded-lg ${benefitColors[index]} border-2 transition-all hover:shadow-md`}
+                >
+                  <div className={`flex-shrink-0 w-3 h-3 rounded-full ${dotColors[index]} mt-2 shadow-lg`}></div>
                 <div>
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-1">
                     {benefit.title}
@@ -126,19 +134,20 @@ export function HowItWorks() {
                   </p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Quick Start Guide */}
-        <div className="mt-8 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="mt-8 bg-gradient-to-br from-white via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950 dark:to-purple-950 rounded-lg shadow-lg border-2 border-indigo-200 dark:border-indigo-800 p-6">
+          <h3 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent mb-4 text-center">
             Quick Start Guide
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mb-3">
-                <span className="text-primary-600 dark:text-primary-400 font-bold text-lg">1</span>
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 dark:from-blue-600 dark:to-indigo-700 flex items-center justify-center mb-3 shadow-lg">
+                <span className="text-white font-bold text-lg">1</span>
               </div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Upload Data</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -146,8 +155,8 @@ export function HowItWorks() {
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mb-3">
-                <span className="text-primary-600 dark:text-primary-400 font-bold text-lg">2</span>
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 dark:from-emerald-600 dark:to-teal-700 flex items-center justify-center mb-3 shadow-lg">
+                <span className="text-white font-bold text-lg">2</span>
               </div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Apply Filters</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -155,8 +164,8 @@ export function HowItWorks() {
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mb-3">
-                <span className="text-primary-600 dark:text-primary-400 font-bold text-lg">3</span>
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 dark:from-purple-600 dark:to-pink-700 flex items-center justify-center mb-3 shadow-lg">
+                <span className="text-white font-bold text-lg">3</span>
               </div>
               <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Analyze & Export</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">

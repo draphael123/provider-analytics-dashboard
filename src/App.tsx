@@ -220,14 +220,14 @@ function App() {
           <>
             {/* Filters Section */}
             <div className="mb-6">
-              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+              <div className="bg-gradient-to-br from-white to-indigo-50/30 dark:from-gray-900 dark:to-indigo-950/50 rounded-lg shadow-lg border-2 border-indigo-200 dark:border-indigo-800 p-6 transition-all">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
+                  <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">Filters</h2>
                   <div className="flex items-center gap-2">
                     {hasActiveFilters && (
                       <button
                         onClick={clearAllFilters}
-                        className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+                        className="px-4 py-2 text-sm bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all"
                       >
                         Clear All
                       </button>

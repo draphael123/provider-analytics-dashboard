@@ -109,20 +109,30 @@ export function ProviderFilter({ providers, selectedProviders, onSelectionChange
 
       {selectedProviders.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
-          {selectedProviders.map((provider) => (
-            <span
-              key={provider}
-              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-800"
-            >
-              {provider}
-              <button
-                onClick={() => handleRemove(provider)}
-                className="ml-1 hover:text-primary-900"
+          {selectedProviders.map((provider, index) => {
+            const badgeColors = [
+              'bg-gradient-to-r from-blue-500 to-indigo-500 text-white',
+              'bg-gradient-to-r from-emerald-500 to-teal-500 text-white',
+              'bg-gradient-to-r from-purple-500 to-pink-500 text-white',
+              'bg-gradient-to-r from-amber-500 to-orange-500 text-white',
+              'bg-gradient-to-r from-cyan-500 to-blue-500 text-white',
+              'bg-gradient-to-r from-pink-500 to-rose-500 text-white',
+            ];
+            return (
+              <span
+                key={provider}
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${badgeColors[index % badgeColors.length]} shadow-md hover:shadow-lg transition-all`}
               >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          ))}
+                {provider}
+                <button
+                  onClick={() => handleRemove(provider)}
+                  className="ml-2 hover:opacity-80 transition-opacity"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
+            );
+          })}
         </div>
       )}
     </div>

@@ -109,15 +109,15 @@ export function ProviderRankingTable({ data, onProviderSelect }: ProviderRanking
   };
 
   const getPerformanceColor = (percent: number) => {
-    if (percent >= 20) return 'bg-green-50 border-green-200';
-    if (percent >= 10) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-red-50 border-red-200';
+    if (percent >= 20) return 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-300 dark:border-green-700';
+    if (percent >= 10) return 'bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/30 dark:to-yellow-900/30 border-2 border-amber-300 dark:border-amber-700';
+    return 'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/30 dark:to-rose-900/30 border-2 border-red-300 dark:border-red-700';
   };
 
   const getPerformanceBadge = (percent: number) => {
-    if (percent >= 20) return { text: 'Excellent', color: 'bg-green-100 text-green-800' };
-    if (percent >= 10) return { text: 'Good', color: 'bg-yellow-100 text-yellow-800' };
-    return { text: 'Needs Improvement', color: 'bg-red-100 text-red-800' };
+    if (percent >= 20) return { text: 'Excellent', color: 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md' };
+    if (percent >= 10) return { text: 'Good', color: 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md' };
+    return { text: 'Needs Improvement', color: 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md' };
   };
 
   if (sortedStats.length === 0) {
@@ -201,17 +201,21 @@ export function ProviderRankingTable({ data, onProviderSelect }: ProviderRanking
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {stat.totalVisits.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{stat.percentOver20Min.toFixed(1)}%</span>
-                      <div className="w-24 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-primary-600 h-2 rounded-full"
-                          style={{ width: `${Math.min(100, stat.percentOver20Min)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">{stat.percentOver20Min.toFixed(1)}%</span>
+                              <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 shadow-inner">
+                                <div
+                                  className={`h-2.5 rounded-full transition-all ${
+                                    stat.percentOver20Min >= 20 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                                    stat.percentOver20Min >= 10 ? 'bg-gradient-to-r from-amber-500 to-yellow-500' :
+                                    'bg-gradient-to-r from-red-500 to-rose-500'
+                                  }`}
+                                  style={{ width: `${Math.min(100, stat.percentOver20Min)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {stat.trend === 'up' ? (
                       <div className="flex items-center gap-1 text-green-600">

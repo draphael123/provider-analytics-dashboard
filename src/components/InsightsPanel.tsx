@@ -133,13 +133,22 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
       <div className="space-y-3">
         {insights.map((insight, index) => {
           const Icon = insight.icon;
+          const gradientColors = [
+            'from-green-400 to-emerald-500',
+            'from-blue-400 to-indigo-500',
+            'from-red-400 to-rose-500',
+            'from-amber-400 to-orange-500',
+          ];
+          const gradient = gradientColors[index % gradientColors.length];
           return (
             <div
               key={index}
-              className={`p-4 rounded-lg border ${insight.color}`}
+              className={`p-4 rounded-lg border-2 shadow-md hover:shadow-lg transition-all ${insight.color} bg-gradient-to-br ${gradient} bg-opacity-10 dark:bg-opacity-20`}
             >
               <div className="flex items-start gap-3">
-                <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient} text-white shadow-lg`}>
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-sm mb-1">{insight.title}</h4>
                   <p className="text-sm">{insight.description}</p>

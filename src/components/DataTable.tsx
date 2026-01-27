@@ -85,7 +85,7 @@ export function DataTable({ data, thresholdPercent = 20 }: DataTableProps) {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Data Table</h3>
         <button
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 rounded-md transition-colors"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-lg shadow-md hover:shadow-lg transition-all"
         >
           <Download className="h-4 w-4" />
           Export CSV

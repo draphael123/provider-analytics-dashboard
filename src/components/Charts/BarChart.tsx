@@ -57,10 +57,10 @@ export function BarChart({ data, selectedMetric }: BarChartProps) {
               return Number(value).toLocaleString();
             }}
           />
-          <Legend />
-          <Bar dataKey="totalVisits" fill="#3b82f6" name="Total Visits" />
-          <Bar dataKey="visitsOver20Min" fill="#10b981" name="Visits Over 20 Min" />
-          <Bar dataKey="percentOver20Min" fill="#f59e0b" name="% Over 20 Min" />
+                  <Legend />
+                  <Bar dataKey="totalVisits" fill="#3b82f6" name="Total Visits" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="visitsOver20Min" fill="#10b981" name="Visits Over 20 Min" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="percentOver20Min" fill="#f59e0b" name="% Over 20 Min" radius={[8, 8, 0, 0]} />
         </RechartsBarChart>
       </ResponsiveContainer>
     </div>
