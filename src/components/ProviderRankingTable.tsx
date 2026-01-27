@@ -7,7 +7,7 @@ interface ProviderRankingTableProps {
   onProviderSelect?: (provider: string) => void;
 }
 
-type SortField = 'provider' | 'totalVisits' | 'visitsOver20Min' | 'percentOver20Min' | 'avgDuration';
+type SortField = 'provider' | 'totalVisits' | 'visitsOver20Min' | 'percentOver20Min';
 type SortDirection = 'asc' | 'desc';
 
 interface ProviderStats {
@@ -15,7 +15,6 @@ interface ProviderStats {
   totalVisits: number;
   visitsOver20Min: number;
   percentOver20Min: number;
-  avgDuration: number;
   trend: 'up' | 'down' | 'neutral';
   trendValue: number;
 }
@@ -32,14 +31,12 @@ export function ProviderRankingTable({ data, onProviderSelect }: ProviderRanking
       if (existing) {
         existing.totalVisits += item.totalVisits;
         existing.visitsOver20Min += item.visitsOver20Min;
-        existing.avgDuration = (existing.avgDuration + item.avgDuration) / 2;
       } else {
         statsMap.set(item.provider, {
           provider: item.provider,
           totalVisits: item.totalVisits,
           visitsOver20Min: item.visitsOver20Min,
           percentOver20Min: item.percentOver20Min,
-          avgDuration: item.avgDuration,
           trend: 'neutral',
           trendValue: 0,
         });
@@ -178,15 +175,6 @@ export function ProviderRankingTable({ data, onProviderSelect }: ProviderRanking
                   {getSortIcon('percentOver20Min')}
                 </div>
               </th>
-              <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('avgDuration')}
-              >
-                <div className="flex items-center gap-2">
-                  Avg Duration
-                  {getSortIcon('avgDuration')}
-                </div>
-              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Trend
               </th>
@@ -223,9 +211,6 @@ export function ProviderRankingTable({ data, onProviderSelect }: ProviderRanking
                         />
                       </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {stat.avgDuration.toFixed(1)} min
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {stat.trend === 'up' ? (

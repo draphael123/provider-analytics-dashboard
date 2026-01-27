@@ -64,7 +64,7 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
   const providerColIndex = 0;
   
   // Strategy 1: Find all week dates in headers and map columns to weeks
-  const weekMap = new Map<string, { total?: number; over20?: number; percent?: number; avg?: number; hours?: number }>();
+  const weekMap = new Map<string, { total?: number; over20?: number; percent?: number; hours?: number }>();
   
   // First, identify all week dates in the headers
   const weekDates: Array<{ date: string; index: number; header: string }> = [];
@@ -103,7 +103,7 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
     const weekStart = Math.max(providerColIndex + 1, weekDate.index);
     const weekEnd = Math.min(headers.length, nextWeekIndex);
     
-    const weekData: { total?: number; over20?: number; percent?: number; avg?: number; hours?: number } = {};
+    const weekData: { total?: number; over20?: number; percent?: number; hours?: number } = {};
     
     console.log(`\nProcessing ${weekKey} (cols ${weekStart} to ${weekEnd - 1}):`);
     
@@ -137,13 +137,6 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
             )) {
               weekData.percent = col;
               console.log(`    → Mapped as %`);
-            } else if (!weekData.avg && (
-              prevHeaderLower.includes('avg') || 
-              prevHeaderLower.includes('average') || 
-              prevHeaderLower.includes('duration')
-            )) {
-              weekData.avg = col;
-              console.log(`    → Mapped as Avg`);
             } else if (!weekData.hours && prevHeaderLower.includes('hour')) {
               weekData.hours = col;
               console.log(`    → Mapped as Hours`);
@@ -180,15 +173,6 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
       )) {
         weekData.percent = col;
         console.log(`    → Mapped as %`);
-      } else if (!weekData.avg && (
-        colHeaderLower.includes('avg') || 
-        colHeaderLower.includes('average') || 
-        colHeaderLower.includes('duration') ||
-        colHeaderLower === 'avg duration' ||
-        colHeaderLower === 'average duration'
-      )) {
-        weekData.avg = col;
-        console.log(`    → Mapped as Avg`);
       } else if (!weekData.hours && (
         colHeaderLower.includes('hour') ||
         colHeaderLower.includes('hours')
@@ -215,14 +199,13 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
       const nextWeekIndex = weekIdx < weekDates.length - 1 ? weekDates[weekIdx + 1].index : headers.length;
       const colsBetween = nextWeekIndex - weekDate.index - 1;
       
-      // Assume standard order: Total, Over 20, %, Avg, Hours (if present)
-      if (colsBetween >= 3) {
+      // Assume standard order: Total, Over 20, %, Hours (if present)
+      if (colsBetween >= 2) {
         weekMap.set(weekKey, {
           total: weekDate.index + 1,
           over20: weekDate.index + 2,
           percent: weekDate.index + 3,
-          avg: weekDate.index + 4,
-          hours: colsBetween >= 5 ? weekDate.index + 5 : undefined,
+          hours: colsBetween >= 4 ? weekDate.index + 4 : undefined,
         });
         console.log(`Sequential mapping for ${weekKey}:`, weekMap.get(weekKey));
       }
@@ -232,7 +215,7 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
   // Strategy 3: Fallback - assume fixed column pattern
   if (weekMap.size === 0) {
     console.log('Using fallback: fixed column pattern');
-    const columnsPerWeek = 4; // Total, Over20, %, Avg
+    const columnsPerWeek = 3; // Total, Over20, %
     const numWeeks = Math.floor((headers.length - 1) / columnsPerWeek);
     
     for (let weekIdx = 0; weekIdx < numWeeks && weekIdx < 52; weekIdx++) {
@@ -243,7 +226,6 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
         total: startCol,
         over20: startCol + 1,
         percent: startCol + 2,
-        avg: startCol + 3,
       });
     }
   }
@@ -272,7 +254,6 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
       const totalVisits = getValue(indices.total);
       const visitsOver20Min = getValue(indices.over20);
       let percentOver20Min = getValue(indices.percent);
-      const avgDuration = getValue(indices.avg);
       const hoursOn20PlusMin = indices.hours !== undefined ? getValue(indices.hours) : undefined;
       
       // Calculate percentage if not provided or is 0
@@ -289,21 +270,18 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
           over20Value: visitsOver20Min,
           percentCol: indices.percent,
           percentValue: percentOver20Min,
-          avgCol: indices.avg,
-          avgValue: avgDuration,
           rawRow: row.slice(0, 10) // First 10 columns
         });
       }
       
       // Only add if we have some data
-      if (totalVisits > 0 || visitsOver20Min > 0 || avgDuration > 0) {
+      if (totalVisits > 0 || visitsOver20Min > 0) {
         result.push({
           provider,
           week,
           totalVisits,
           visitsOver20Min,
           percentOver20Min,
-          avgDuration,
           hoursOn20PlusMin: hoursOn20PlusMin !== undefined && hoursOn20PlusMin > 0 ? hoursOn20PlusMin : undefined,
         });
       }

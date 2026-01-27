@@ -8,7 +8,6 @@ interface MetricFilterProps {
 const availableMetrics: { value: MetricType; label: string }[] = [
   { value: 'totalVisits', label: 'Total Visits' },
   { value: 'percentOver20Min', label: '% Over 20 Min' },
-  { value: 'avgDuration', label: 'Avg Duration' },
 ];
 
 export function MetricFilter({ selectedMetrics, onMetricsChange }: MetricFilterProps) {

@@ -8,7 +8,7 @@ interface DataTableProps {
   thresholdPercent?: number;
 }
 
-type SortField = 'provider' | 'week' | 'totalVisits' | 'visitsOver20Min' | 'percentOver20Min' | 'avgDuration';
+type SortField = 'provider' | 'week' | 'totalVisits' | 'visitsOver20Min' | 'percentOver20Min';
 type SortDirection = 'asc' | 'desc' | null;
 
 export function DataTable({ data, thresholdPercent = 20 }: DataTableProps) {
@@ -140,15 +140,6 @@ export function DataTable({ data, thresholdPercent = 20 }: DataTableProps) {
                   {getSortIcon('percentOver20Min')}
                 </div>
               </th>
-              <th
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                onClick={() => handleSort('avgDuration')}
-              >
-                <div className="flex items-center gap-2">
-                  Avg Duration
-                  {getSortIcon('avgDuration')}
-                </div>
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -173,9 +164,6 @@ export function DataTable({ data, thresholdPercent = 20 }: DataTableProps) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {row.percentOver20Min.toFixed(1)}%
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {row.avgDuration.toFixed(1)} min
                   </td>
                 </tr>
               );

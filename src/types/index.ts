@@ -4,7 +4,6 @@ export interface ProviderWeekData {
   totalVisits: number;
   visitsOver20Min: number;
   percentOver20Min: number;
-  avgDuration: number;
   hoursOn20PlusMin?: number;
 }
 
@@ -15,7 +14,7 @@ export interface FilterState {
   thresholdPercent: number | null;
 }
 
-export type MetricType = 'totalVisits' | 'percentOver20Min' | 'avgDuration';
+export type MetricType = 'totalVisits' | 'percentOver20Min';
 
 export interface SummaryStats {
   totalProviders: number;

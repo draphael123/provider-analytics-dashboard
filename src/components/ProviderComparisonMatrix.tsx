@@ -4,38 +4,36 @@ import { ProviderWeekData } from '../types';
 interface ProviderComparisonMatrixProps {
   data: ProviderWeekData[];
   selectedProviders: string[];
-  onProvidersChange?: (providers: string[]) => void;
+}
+
+interface ProviderStats {
+  provider: string;
+  totalVisits: number;
+  visitsOver20Min: number;
+  percentOver20Min: number;
+  weeks: number;
 }
 
 export function ProviderComparisonMatrix({ data, selectedProviders, onProvidersChange }: ProviderComparisonMatrixProps) {
   const comparisonData = useMemo(() => {
-    const statsMap = new Map<string, {
-      provider: string;
-      totalVisits: number;
-      visitsOver20Min: number;
-      percentOver20Min: number;
-      avgDuration: number;
-      weeks: number;
-    }>();
+    const statsMap = new Map<string, ProviderStats>();
 
     data.forEach(item => {
       if (selectedProviders.includes(item.provider)) {
         const existing = statsMap.get(item.provider);
-        if (existing) {
-          existing.totalVisits += item.totalVisits;
-          existing.visitsOver20Min += item.visitsOver20Min;
-          existing.avgDuration = (existing.avgDuration * existing.weeks + item.avgDuration) / (existing.weeks + 1);
-          existing.weeks += 1;
-        } else {
-          statsMap.set(item.provider, {
-            provider: item.provider,
-            totalVisits: item.totalVisits,
-            visitsOver20Min: item.visitsOver20Min,
-            percentOver20Min: item.percentOver20Min,
-            avgDuration: item.avgDuration,
-            weeks: 1,
-          });
-        }
+      if (existing) {
+        existing.totalVisits += item.totalVisits;
+        existing.visitsOver20Min += item.visitsOver20Min;
+        existing.weeks += 1;
+      } else {
+        statsMap.set(item.provider, {
+          provider: item.provider,
+          totalVisits: item.totalVisits,
+          visitsOver20Min: item.visitsOver20Min,
+          percentOver20Min: item.percentOver20Min,
+          weeks: 1,
+        });
+      }
       }
     });
 
@@ -67,7 +65,6 @@ export function ProviderComparisonMatrix({ data, selectedProviders, onProvidersC
     return {
       totalVisits: Math.max(...comparisonData.map(d => d.totalVisits), 1),
       percentOver20Min: Math.max(...comparisonData.map(d => d.percentOver20Min), 1),
-      avgDuration: Math.max(...comparisonData.map(d => d.avgDuration), 1),
     };
   }, [comparisonData]);
 
@@ -107,19 +104,6 @@ export function ProviderComparisonMatrix({ data, selectedProviders, onProvidersC
                       'bg-red-500'
                     }`}
                     style={{ width: `${Math.min(100, (stat.percentOver20Min / maxValues.percentOver20Min) * 100)}%` }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs text-gray-600 mb-1">
-                  <span>Avg Duration</span>
-                  <span className="font-medium">{stat.avgDuration.toFixed(1)} min</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-purple-600 h-2 rounded-full"
-                    style={{ width: `${(stat.avgDuration / maxValues.avgDuration) * 100}%` }}
                   />
                 </div>
               </div>

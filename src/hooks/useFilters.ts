@@ -5,7 +5,7 @@ import { filterData } from '../utils/calculations';
 export function useFilters(data: ProviderWeekData[]) {
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [weekRange, setWeekRange] = useState<[string, string] | null>(null);
-  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(['totalVisits', 'percentOver20Min', 'avgDuration']);
+  const [selectedMetrics, setSelectedMetrics] = useState<string[]>(['totalVisits', 'percentOver20Min']);
   const [thresholdPercent, setThresholdPercent] = useState<number | null>(null);
   
   const filteredData = useMemo(() => {

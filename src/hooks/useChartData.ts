@@ -56,7 +56,6 @@ export function useChartData(
           totalVisits: 0,
           visitsOver20Min: 0,
           percentOver20Min: 0,
-          avgDuration: 0,
         };
       }
       
@@ -65,7 +64,6 @@ export function useChartData(
         totalVisits: providerWeekData.totalVisits,
         visitsOver20Min: providerWeekData.visitsOver20Min,
         percentOver20Min: providerWeekData.percentOver20Min,
-        avgDuration: providerWeekData.avgDuration,
       };
     });
   }, [data, selectedProviders]);

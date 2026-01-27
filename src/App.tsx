@@ -27,7 +27,7 @@ function App() {
   const [data, setData] = useState<ProviderWeekData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('totalVisits');
-  const [barChartMetric, setBarChartMetric] = useState<'totalVisits' | 'visitsOver20Min' | 'percentOver20Min' | 'avgDuration'>('totalVisits');
+  const [barChartMetric, setBarChartMetric] = useState<'totalVisits' | 'visitsOver20Min' | 'percentOver20Min'>('totalVisits');
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
 
   const {
@@ -101,7 +101,6 @@ function App() {
 
     // For other metrics, calculate similarly
     const totalVisitsValues = filteredData.map(d => d.totalVisits);
-    const avgDurationValues = filteredData.map(d => d.avgDuration);
 
     return {
       percentOver20Min: {
@@ -113,11 +112,6 @@ function App() {
         average: totalVisitsValues.reduce((sum, v) => sum + v, 0) / totalVisitsValues.length,
         median: [...totalVisitsValues].sort((a, b) => a - b)[Math.floor(totalVisitsValues.length / 2)] || 0,
         topQuartile: [...totalVisitsValues].sort((a, b) => b - a)[Math.floor(totalVisitsValues.length * 0.25)] || 0,
-      },
-      avgDuration: {
-        average: avgDurationValues.reduce((sum, v) => sum + v, 0) / avgDurationValues.length,
-        median: [...avgDurationValues].sort((a, b) => a - b)[Math.floor(avgDurationValues.length / 2)] || 0,
-        topQuartile: [...avgDurationValues].sort((a, b) => b - a)[Math.floor(avgDurationValues.length * 0.25)] || 0,
       },
     };
   }, [filteredData]);
@@ -311,7 +305,6 @@ function App() {
                       <option value="totalVisits">Total Visits</option>
                       <option value="visitsOver20Min">Visits Over 20 Min</option>
                       <option value="percentOver20Min">% Over 20 Min</option>
-                      <option value="avgDuration">Avg Duration</option>
                     </select>
                   </div>
                 </div>

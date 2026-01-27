@@ -22,7 +22,6 @@ interface LineChartProps {
 const metricLabels: Record<MetricType, string> = {
   totalVisits: 'Total Visits',
   percentOver20Min: '% Over 20 Min',
-  avgDuration: 'Avg Duration (min)',
 };
 
 const colors = [
@@ -71,8 +70,6 @@ export function LineChart({ data, selectedMetric, selectedProviders, allProvider
               let formatted = '';
               if (selectedMetric === 'percentOver20Min') {
                 formatted = `${Number(value).toFixed(1)}%`;
-              } else if (selectedMetric === 'avgDuration') {
-                formatted = `${Number(value).toFixed(1)} min`;
               } else {
                 formatted = Number(value).toLocaleString();
               }

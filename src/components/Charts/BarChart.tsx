@@ -5,19 +5,17 @@ interface BarChartData {
   totalVisits: number;
   visitsOver20Min: number;
   percentOver20Min: number;
-  avgDuration: number;
 }
 
 interface BarChartProps {
   data: BarChartData[];
-  selectedMetric: 'totalVisits' | 'visitsOver20Min' | 'percentOver20Min' | 'avgDuration';
+  selectedMetric: 'totalVisits' | 'visitsOver20Min' | 'percentOver20Min';
 }
 
 const metricLabels: Record<string, string> = {
   totalVisits: 'Total Visits',
   visitsOver20Min: 'Visits Over 20 Min',
   percentOver20Min: '% Over 20 Min',
-  avgDuration: 'Avg Duration (min)',
 };
 
 export function BarChart({ data, selectedMetric }: BarChartProps) {
@@ -56,9 +54,6 @@ export function BarChart({ data, selectedMetric }: BarChartProps) {
               if (selectedMetric === 'percentOver20Min') {
                 return `${Number(value).toFixed(1)}%`;
               }
-              if (selectedMetric === 'avgDuration') {
-                return `${Number(value).toFixed(1)} min`;
-              }
               return Number(value).toLocaleString();
             }}
           />
@@ -66,7 +61,6 @@ export function BarChart({ data, selectedMetric }: BarChartProps) {
           <Bar dataKey="totalVisits" fill="#3b82f6" name="Total Visits" />
           <Bar dataKey="visitsOver20Min" fill="#10b981" name="Visits Over 20 Min" />
           <Bar dataKey="percentOver20Min" fill="#f59e0b" name="% Over 20 Min" />
-          <Bar dataKey="avgDuration" fill="#ef4444" name="Avg Duration" />
         </RechartsBarChart>
       </ResponsiveContainer>
     </div>

@@ -1,7 +1,7 @@
 import { ProviderWeekData } from '../types';
 
 export function exportToCSV(data: ProviderWeekData[], filename: string = 'provider-analytics.csv'): void {
-  const headers = ['Provider', 'Week', 'Total Visits', 'Visits Over 20 Min', '% Over 20 Min', 'Avg Duration', 'Hours on 20+ Min'];
+  const headers = ['Provider', 'Week', 'Total Visits', 'Visits Over 20 Min', '% Over 20 Min'];
   
   const csvRows = [
     headers.join(','),
@@ -11,8 +11,6 @@ export function exportToCSV(data: ProviderWeekData[], filename: string = 'provid
       row.totalVisits,
       row.visitsOver20Min,
       row.percentOver20Min.toFixed(2),
-      row.avgDuration.toFixed(2),
-      row.hoursOn20PlusMin?.toFixed(2) || '',
     ].join(','))
   ];
   
