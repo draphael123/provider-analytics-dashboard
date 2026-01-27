@@ -55,7 +55,7 @@ function App() {
 
   const previousPeriodData = useMemo(() => {
     if (!weekRange || filteredData.length === 0) return undefined;
-    const [startWeek, endWeek] = weekRange;
+    const [startWeek] = weekRange;
     const weeks = Array.from(new Set(data.map(d => d.week))).sort();
     const startIndex = weeks.indexOf(startWeek);
     if (startIndex < 4) return undefined;

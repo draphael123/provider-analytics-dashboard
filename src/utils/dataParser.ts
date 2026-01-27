@@ -41,9 +41,6 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
   // Find the provider column index (usually first column)
   const providerColIndex = 0;
   
-  // Identify week columns - look for patterns like "Week of", "Week", or date patterns
-  const weekColumns: { week: string; indices: { total: number; over20: number; percent: number; avg: number; hours?: number } }[] = [];
-  
   // Group columns by week
   const weekMap = new Map<string, { total?: number; over20?: number; percent?: number; avg?: number; hours?: number }>();
   
