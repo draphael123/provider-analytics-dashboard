@@ -12,6 +12,10 @@ import { ProviderFilter } from './components/Filters/ProviderFilter';
 import { WeekRangeFilter } from './components/Filters/WeekRangeFilter';
 import { MetricFilter } from './components/Filters/MetricFilter';
 import { ThresholdFilter } from './components/Filters/ThresholdFilter';
+import { PerformanceTierFilter } from './components/Filters/PerformanceTierFilter';
+import { VisitVolumeFilter } from './components/Filters/VisitVolumeFilter';
+import { TrendFilter } from './components/Filters/TrendFilter';
+import { MinimumVisitsFilter } from './components/Filters/MinimumVisitsFilter';
 import { SummaryCards } from './components/SummaryCards';
 import { LineChart } from './components/Charts/LineChart';
 import { BarChart } from './components/Charts/BarChart';
@@ -40,6 +44,14 @@ function App() {
     setSelectedMetrics,
     thresholdPercent,
     setThresholdPercent,
+    performanceTier,
+    setPerformanceTier,
+    visitVolume,
+    setVisitVolume,
+    trend,
+    setTrend,
+    minimumVisits,
+    setMinimumVisits,
     clearAllFilters,
   } = useFilters(data);
 
@@ -174,7 +186,8 @@ function App() {
     }
   };
 
-  const hasActiveFilters = selectedProviders.length > 0 || weekRange !== null || thresholdPercent !== null;
+  const hasActiveFilters = selectedProviders.length > 0 || weekRange !== null || thresholdPercent !== null || 
+    performanceTier !== null || visitVolume !== null || trend !== null || minimumVisits !== null;
 
       return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
@@ -235,6 +248,25 @@ function App() {
                   <ThresholdFilter
                     thresholdPercent={thresholdPercent}
                     onThresholdChange={setThresholdPercent}
+                  />
+                  <PerformanceTierFilter
+                    data={data}
+                    selectedTier={performanceTier}
+                    onTierChange={setPerformanceTier}
+                  />
+                  <VisitVolumeFilter
+                    data={data}
+                    selectedVolume={visitVolume}
+                    onVolumeChange={setVisitVolume}
+                  />
+                  <TrendFilter
+                    data={data}
+                    selectedTrend={trend}
+                    onTrendChange={setTrend}
+                  />
+                  <MinimumVisitsFilter
+                    minimumVisits={minimumVisits}
+                    onMinimumVisitsChange={setMinimumVisits}
                   />
                 </div>
               </div>
