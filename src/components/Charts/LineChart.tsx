@@ -1,4 +1,4 @@
-import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { MetricType } from '../../types';
 
 interface LineChartDataPoint {
@@ -11,6 +11,12 @@ interface LineChartProps {
   selectedMetric: MetricType;
   selectedProviders: string[];
   allProviders: string[];
+  showBenchmarks?: boolean;
+  benchmarkValues?: {
+    average: number;
+    median: number;
+    topQuartile: number;
+  };
 }
 
 const metricLabels: Record<MetricType, string> = {
@@ -30,7 +36,7 @@ const colors = [
   '#ec4899', // pink
 ];
 
-export function LineChart({ data, selectedMetric, selectedProviders, allProviders }: LineChartProps) {
+export function LineChart({ data, selectedMetric, selectedProviders, allProviders, showBenchmarks = true, benchmarkValues }: LineChartProps) {
   const providersToShow = selectedProviders.length > 0 ? selectedProviders : allProviders.slice(0, 8);
   
   if (data.length === 0) {
@@ -60,17 +66,42 @@ export function LineChart({ data, selectedMetric, selectedProviders, allProvider
             label={{ value: metricLabels[selectedMetric], angle: -90, position: 'insideLeft' }}
           />
           <Tooltip 
-            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-            formatter={(value: string | number) => {
+            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px' }}
+            formatter={(value: string | number, name: string) => {
+              let formatted = '';
               if (selectedMetric === 'percentOver20Min') {
-                return `${Number(value).toFixed(1)}%`;
+                formatted = `${Number(value).toFixed(1)}%`;
+              } else if (selectedMetric === 'avgDuration') {
+                formatted = `${Number(value).toFixed(1)} min`;
+              } else {
+                formatted = Number(value).toLocaleString();
               }
-              if (selectedMetric === 'avgDuration') {
-                return `${Number(value).toFixed(1)} min`;
-              }
-              return Number(value).toLocaleString();
+              return [formatted, name];
             }}
+            labelFormatter={(label) => `Week: ${label}`}
           />
+          {showBenchmarks && benchmarkValues && (
+            <>
+              <ReferenceLine 
+                y={benchmarkValues.average} 
+                stroke="#3b82f6" 
+                strokeDasharray="5 5" 
+                label={{ value: `Avg: ${benchmarkValues.average.toFixed(1)}${selectedMetric === 'percentOver20Min' ? '%' : ''}`, position: 'right' }}
+              />
+              <ReferenceLine 
+                y={benchmarkValues.median} 
+                stroke="#10b981" 
+                strokeDasharray="3 3" 
+                label={{ value: `Median: ${benchmarkValues.median.toFixed(1)}${selectedMetric === 'percentOver20Min' ? '%' : ''}`, position: 'right' }}
+              />
+              <ReferenceLine 
+                y={benchmarkValues.topQuartile} 
+                stroke="#f59e0b" 
+                strokeDasharray="2 2" 
+                label={{ value: `Top 25%: ${benchmarkValues.topQuartile.toFixed(1)}${selectedMetric === 'percentOver20Min' ? '%' : ''}`, position: 'right' }}
+              />
+            </>
+          )}
           <Legend 
             wrapperStyle={{ paddingTop: '20px' }}
             iconType="line"
@@ -89,6 +120,22 @@ export function LineChart({ data, selectedMetric, selectedProviders, allProvider
           ))}
         </RechartsLineChart>
       </ResponsiveContainer>
+      {showBenchmarks && benchmarkValues && (
+        <div className="mt-2 flex items-center gap-4 text-xs text-gray-600">
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-1 bg-blue-500" style={{ borderTop: '2px dashed #3b82f6' }}></div>
+            <span>Average</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-1 bg-green-500" style={{ borderTop: '2px dashed #10b981' }}></div>
+            <span>Median</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-1 bg-amber-500" style={{ borderTop: '2px dashed #f59e0b' }}></div>
+            <span>Top 25%</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

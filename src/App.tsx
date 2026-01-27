@@ -17,6 +17,11 @@ import { LineChart } from './components/Charts/LineChart';
 import { BarChart } from './components/Charts/BarChart';
 import { ChartControls } from './components/Charts/ChartControls';
 import { DataTable } from './components/DataTable';
+import { ProviderRankingTable } from './components/ProviderRankingTable';
+import { HeatmapChart } from './components/Charts/HeatmapChart';
+import { ProviderComparisonMatrix } from './components/ProviderComparisonMatrix';
+import { PerformanceDistribution } from './components/PerformanceDistribution';
+import { InsightsPanel } from './components/InsightsPanel';
 
 function App() {
   const [data, setData] = useState<ProviderWeekData[]>([]);
@@ -75,6 +80,55 @@ function App() {
   const summaryStats = useMemo(() => {
     return calculateSummaryStats(filteredData, previousPeriodData);
   }, [filteredData, previousPeriodData]);
+
+  // Calculate benchmark values for charts
+  const benchmarkValues = useMemo(() => {
+    if (filteredData.length === 0) return undefined;
+
+    const providerPercents = Array.from(
+      new Set(filteredData.map(d => d.provider))
+    ).map(provider => {
+      const providerData = filteredData.filter(d => d.provider === provider);
+      const totalVisits = providerData.reduce((sum, d) => sum + d.totalVisits, 0);
+      const visitsOver20 = providerData.reduce((sum, d) => sum + d.visitsOver20Min, 0);
+      return totalVisits > 0 ? (visitsOver20 / totalVisits) * 100 : 0;
+    });
+
+    const sorted = [...providerPercents].sort((a, b) => a - b);
+    const avg = providerPercents.reduce((sum, p) => sum + p, 0) / providerPercents.length;
+    const median = sorted[Math.floor(sorted.length / 2)] || 0;
+    const topQuartile = sorted[Math.floor(sorted.length * 0.75)] || 0;
+
+    // For other metrics, calculate similarly
+    const totalVisitsValues = filteredData.map(d => d.totalVisits);
+    const avgDurationValues = filteredData.map(d => d.avgDuration);
+
+    return {
+      percentOver20Min: {
+        average: avg,
+        median: median,
+        topQuartile: topQuartile,
+      },
+      totalVisits: {
+        average: totalVisitsValues.reduce((sum, v) => sum + v, 0) / totalVisitsValues.length,
+        median: [...totalVisitsValues].sort((a, b) => a - b)[Math.floor(totalVisitsValues.length / 2)] || 0,
+        topQuartile: [...totalVisitsValues].sort((a, b) => b - a)[Math.floor(totalVisitsValues.length * 0.25)] || 0,
+      },
+      avgDuration: {
+        average: avgDurationValues.reduce((sum, v) => sum + v, 0) / avgDurationValues.length,
+        median: [...avgDurationValues].sort((a, b) => a - b)[Math.floor(avgDurationValues.length / 2)] || 0,
+        topQuartile: [...avgDurationValues].sort((a, b) => b - a)[Math.floor(avgDurationValues.length * 0.25)] || 0,
+      },
+    };
+  }, [filteredData]);
+
+  const handleProviderSelect = (provider: string) => {
+    if (selectedProviders.includes(provider)) {
+      setSelectedProviders([provider]);
+    } else {
+      setSelectedProviders([provider]);
+    }
+  };
 
   // Load default Excel file on mount
   useEffect(() => {
@@ -195,6 +249,29 @@ function App() {
             {/* Summary Cards */}
             <SummaryCards stats={summaryStats} />
 
+            {/* Insights Panel */}
+            <div className="mb-6">
+              <InsightsPanel data={filteredData} />
+            </div>
+
+            {/* Provider Ranking Table */}
+            <div className="mb-6">
+              <ProviderRankingTable 
+                data={filteredData} 
+                onProviderSelect={handleProviderSelect}
+              />
+            </div>
+
+            {/* Provider Comparison Matrix */}
+            {selectedProviders.length >= 2 && selectedProviders.length <= 4 && (
+              <div className="mb-6">
+                <ProviderComparisonMatrix 
+                  data={filteredData}
+                  selectedProviders={selectedProviders}
+                />
+              </div>
+            )}
+
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               {/* Line Chart */}
@@ -211,6 +288,12 @@ function App() {
                   selectedMetric={selectedMetric}
                   selectedProviders={selectedProviders}
                   allProviders={allProviders}
+                  showBenchmarks={true}
+                  benchmarkValues={benchmarkValues ? {
+                    average: benchmarkValues[selectedMetric].average,
+                    median: benchmarkValues[selectedMetric].median,
+                    topQuartile: benchmarkValues[selectedMetric].topQuartile,
+                  } : undefined}
                 />
               </div>
 
@@ -237,6 +320,18 @@ function App() {
                   selectedMetric={barChartMetric}
                 />
               </div>
+            </div>
+
+            {/* Heatmap and Distribution */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* Heatmap */}
+              <HeatmapChart 
+                data={filteredData}
+                selectedProviders={selectedProviders}
+              />
+
+              {/* Performance Distribution */}
+              <PerformanceDistribution data={filteredData} />
             </div>
 
             {/* Data Table */}
