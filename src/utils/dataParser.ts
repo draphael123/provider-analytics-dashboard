@@ -232,6 +232,13 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
     });
   });
   
+  console.log('Parsed provider data:', result.length, 'records');
+  if (result.length === 0) {
+    console.warn('No data parsed. Headers:', headers);
+    console.warn('Week map:', Array.from(weekMap.entries()));
+    console.warn('Data rows:', dataRows.length);
+  }
+  
   return result;
 }
 

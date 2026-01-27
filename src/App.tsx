@@ -80,13 +80,33 @@ function App() {
   useEffect(() => {
     const loadDefaultData = async () => {
       setIsLoading(true);
+      
+      // Add timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        console.error('File loading timeout - taking too long');
+        setIsLoading(false);
+        alert('Loading timeout. Please try uploading the file manually.');
+      }, 30000); // 30 second timeout
+      
       try {
+        console.log('Attempting to load default Excel file...');
         const parsedData = await loadDefaultExcelFile('/Doxy - Over 20 minutes (9).xlsx');
+        clearTimeout(timeoutId);
+        
+        console.log('Data loaded successfully:', parsedData.length, 'records');
+        
+        if (parsedData.length === 0) {
+          throw new Error('No data found in the Excel file. Please check the file format.');
+        }
+        
         setData(parsedData);
+        setIsLoading(false);
       } catch (error) {
+        clearTimeout(timeoutId);
         console.error('Error loading default file:', error);
         // If default file fails, show upload UI
         setIsLoading(false);
+        alert(`Failed to load default data file. Please upload the Excel file manually.\n\nError: ${error instanceof Error ? error.message : String(error)}`);
       }
     };
     
