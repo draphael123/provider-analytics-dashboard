@@ -39,6 +39,7 @@ function App() {
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('totalVisits');
   const [barChartMetric, setBarChartMetric] = useState<'totalVisits' | 'visitsOver20Min' | 'percentOver20Min'>('totalVisits');
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
+  const [lineChartType, setLineChartType] = useState<'line' | 'area'>('line');
 
   const {
     filteredData,
