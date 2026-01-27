@@ -448,7 +448,8 @@ function App() {
             {/* Data Table */}
             <DataTable data={filteredData} thresholdPercent={thresholdPercent || 20} />
           </>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );
