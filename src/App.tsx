@@ -199,8 +199,12 @@ function App() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
           <Header />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {isLoading ? (
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* How It Works Section - Always visible */}
+        <HowItWorks />
+        
+        <div className="py-8">
+          {isLoading ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400 mx-auto mb-4"></div>
