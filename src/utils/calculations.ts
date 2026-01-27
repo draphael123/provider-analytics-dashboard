@@ -56,8 +56,16 @@ export function filterData(
     if (filters.weekRange) {
       const [startWeek, endWeek] = filters.weekRange;
       const itemWeek = normalizeWeekLabel(item.week);
-      const weeks = sortWeeks([startWeek, endWeek, itemWeek]);
-      if (weeks[0] !== startWeek || weeks[2] !== endWeek) {
+      
+      // Use sorted weeks to determine if item is in range
+      // This handles year boundaries correctly
+      const allWeeks = sortWeeks([startWeek, endWeek, itemWeek]);
+      const startIndex = allWeeks.indexOf(startWeek);
+      const endIndex = allWeeks.indexOf(endWeek);
+      const itemIndex = allWeeks.indexOf(itemWeek);
+      
+      // Item must be between start and end (inclusive)
+      if (itemIndex < startIndex || itemIndex > endIndex) {
         return false;
       }
     }
@@ -95,9 +103,59 @@ function extractDate(weekStr: string): Date | null {
   if (match) {
     const month = parseInt(match[1]) - 1;
     const day = parseInt(match[2]);
+    
+    // Determine the year: handle year boundaries
     const currentYear = new Date().getFullYear();
-    return new Date(currentYear, month, day);
+    let year = currentYear;
+    
+    // If month is Nov-Dec, likely from previous year
+    if (month >= 10) {
+      year = currentYear - 1;
+    }
+    
+    return new Date(year, month, day);
   }
   return null;
+}
+
+function sortWeeks(weeks: string[]): string[] {
+  if (weeks.length === 0) return weeks;
+  
+  // Extract all dates first
+  const dates = weeks.map(w => extractDate(w)).filter(d => d !== null) as Date[];
+  if (dates.length === 0) return weeks.sort();
+  
+  // Find the earliest date to establish baseline year
+  const earliestDate = new Date(Math.min(...dates.map(d => d.getTime())));
+  const earliestYear = earliestDate.getFullYear();
+  
+  // Check if we have dates spanning year boundary (Nov-Dec and Jan-Mar)
+  const hasNovDec = dates.some(d => d.getMonth() >= 10);
+  const hasJanMar = dates.some(d => d.getMonth() <= 2);
+  
+  // Create adjusted dates map
+  const weekDateMap = new Map<string, Date>();
+  weeks.forEach(week => {
+    const date = extractDate(week);
+    if (date) {
+      let adjustedDate = date;
+      if (hasNovDec && hasJanMar) {
+        // Adjust dates to handle year boundary
+        if (date.getMonth() <= 2) { // Jan-Mar
+          adjustedDate = new Date(earliestYear + 1, date.getMonth(), date.getDate());
+        } else if (date.getMonth() >= 10) { // Nov-Dec
+          adjustedDate = new Date(earliestYear, date.getMonth(), date.getDate());
+        }
+      }
+      weekDateMap.set(week, adjustedDate);
+    }
+  });
+  
+  return [...weeks].sort((a, b) => {
+    const dateA = weekDateMap.get(a) || extractDate(a);
+    const dateB = weekDateMap.get(b) || extractDate(b);
+    if (!dateA || !dateB) return a.localeCompare(b);
+    return dateA.getTime() - dateB.getTime();
+  });
 }
 
