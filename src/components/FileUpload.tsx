@@ -34,7 +34,7 @@ export function FileUpload({ onFileSelect, isLoading }: FileUploadProps) {
 
   return (
     <div
-      className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-primary-400 transition-colors cursor-pointer"
+      className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-12 text-center hover:border-primary-400 dark:hover:border-primary-500 transition-colors cursor-pointer bg-white dark:bg-gray-900"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onClick={() => fileInputRef.current?.click()}
@@ -48,19 +48,19 @@ export function FileUpload({ onFileSelect, isLoading }: FileUploadProps) {
       />
       {isLoading ? (
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
-          <p className="text-gray-600">Processing file...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400 mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Processing file...</p>
         </div>
       ) : (
         <div className="flex flex-col items-center">
-          <FileSpreadsheet className="h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-lg font-medium text-gray-700 mb-2">
+          <FileSpreadsheet className="h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+          <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             Upload Excel File
           </p>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Drag and drop your Excel file here, or click to browse
           </p>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-400 dark:text-gray-500">
             Supports .xlsx and .xls files
           </p>
         </div>

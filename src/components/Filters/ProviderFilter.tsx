@@ -40,33 +40,33 @@ export function ProviderFilter({ providers, selectedProviders, onSelectionChange
 
   return (
     <div className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
         Providers
       </label>
       <div className="relative">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-4 py-2 text-left bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 flex items-center justify-between"
+          className="w-full px-4 py-2 text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 flex items-center justify-between transition-colors"
         >
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-gray-700 dark:text-gray-300">
             {selectedProviders.length === 0
               ? 'All providers'
               : `${selectedProviders.length} selected`}
           </span>
-          <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-hidden">
-            <div className="p-2 border-b border-gray-200">
+          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-64 overflow-hidden transition-colors">
+            <div className="p-2 border-b border-gray-200 dark:border-gray-700">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search providers..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
               </div>
               <div className="flex gap-2 mt-2">
@@ -88,19 +88,19 @@ export function ProviderFilter({ providers, selectedProviders, onSelectionChange
               {filteredProviders.map((provider) => (
                 <label
                   key={provider}
-                  className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
                 >
                   <input
                     type="checkbox"
                     checked={selectedProviders.includes(provider)}
                     onChange={() => handleToggle(provider)}
-                    className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-900"
                   />
-                  <span className="text-sm text-gray-700">{provider}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{provider}</span>
                 </label>
               ))}
               {filteredProviders.length === 0 && (
-                <div className="px-3 py-2 text-sm text-gray-500">No providers found</div>
+                <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No providers found</div>
               )}
             </div>
           </div>

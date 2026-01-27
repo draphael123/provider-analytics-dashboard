@@ -39,21 +39,21 @@ export function SummaryCards({ stats }: SummaryCardsProps) {
       {cards.map((card, index) => (
         <div
           key={index}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+          className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">{card.title}</p>
-              <p className="text-2xl font-bold text-gray-900 mt-2">{card.value}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{card.title}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{card.value}</p>
             </div>
             {card.icon && (
               <div
-                className={`p-3 rounded-full ${
+                className={`p-3 rounded-full transition-colors ${
                   card.trend === 'up'
-                    ? 'bg-green-100 text-green-600'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
                     : card.trend === 'down'
-                    ? 'bg-red-100 text-red-600'
-                    : 'bg-gray-100 text-gray-600'
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                 }`}
               >
                 <card.icon className="h-6 w-6" />

@@ -176,16 +176,16 @@ function App() {
 
   const hasActiveFilters = selectedProviders.length > 0 || weekRange !== null || thresholdPercent !== null;
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+      return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
+          <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading data...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading data...</p>
             </div>
           </div>
         ) : data.length === 0 ? (
@@ -196,21 +196,21 @@ function App() {
           <>
             {/* Filters Section */}
             <div className="mb-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
                   <div className="flex items-center gap-2">
                     {hasActiveFilters && (
                       <button
                         onClick={clearAllFilters}
-                        className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                        className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
                       >
                         Clear All
                       </button>
                     )}
                     <button
                       onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                      className="md:hidden text-gray-600 hover:text-gray-700"
+                      className="md:hidden text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
                       {isFiltersOpen ? 'Hide' : 'Show'} Filters
                     </button>
@@ -268,10 +268,10 @@ function App() {
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              {/* Line Chart */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Week-over-Week Trend</h3>
+                  {/* Line Chart */}
+                  <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Week-over-Week Trend</h3>
                   <ChartControls
                     selectedMetric={selectedMetric}
                     onMetricChange={setSelectedMetric}
@@ -291,17 +291,17 @@ function App() {
                 />
               </div>
 
-              {/* Bar Chart */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Provider Comparison</h3>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium text-gray-700">Metric:</span>
-                    <select
-                      value={barChartMetric}
-                      onChange={(e) => setBarChartMetric(e.target.value as any)}
-                      className="px-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    >
+                  {/* Bar Chart */}
+                  <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Provider Comparison</h3>
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Metric:</span>
+                        <select
+                          value={barChartMetric}
+                          onChange={(e) => setBarChartMetric(e.target.value as any)}
+                          className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        >
                       <option value="totalVisits">Total Visits</option>
                       <option value="visitsOver20Min">Visits Over 20 Min</option>
                       <option value="percentOver20Min">% Over 20 Min</option>

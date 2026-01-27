@@ -40,8 +40,8 @@ export function LineChart({ data, selectedMetric, selectedProviders, allProvider
   
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border border-gray-200">
-        <p className="text-gray-500">No data available for the selected filters</p>
+      <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+        <p className="text-gray-500 dark:text-gray-400">No data available for the selected filters</p>
       </div>
     );
   }
@@ -50,22 +50,31 @@ export function LineChart({ data, selectedMetric, selectedProviders, allProvider
     <div className="w-full h-96">
       <ResponsiveContainer width="100%" height="100%">
         <RechartsLineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-700" />
           <XAxis 
             dataKey="week" 
             stroke="#6b7280"
-            tick={{ fontSize: 12 }}
+            className="dark:stroke-gray-400"
+            tick={{ fontSize: 12, fill: '#6b7280' }}
             angle={-45}
             textAnchor="end"
             height={80}
           />
           <YAxis 
             stroke="#6b7280"
-            tick={{ fontSize: 12 }}
+            className="dark:stroke-gray-400"
+            tick={{ fontSize: 12, fill: '#6b7280' }}
             label={{ value: metricLabels[selectedMetric], angle: -90, position: 'insideLeft' }}
           />
           <Tooltip 
-            contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '8px' }}
+            contentStyle={{ 
+              backgroundColor: 'var(--tooltip-bg, #fff)', 
+              border: '1px solid var(--tooltip-border, #e5e7eb)', 
+              borderRadius: '8px', 
+              padding: '8px',
+              color: 'var(--tooltip-text, #000)'
+            }}
+            wrapperStyle={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' }}
             formatter={(value: string | number, name: string) => {
               let formatted = '';
               if (selectedMetric === 'percentOver20Min') {
