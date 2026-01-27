@@ -31,6 +31,7 @@ import { HeatmapChart } from './components/Charts/HeatmapChart';
 import { ProviderComparisonMatrix } from './components/ProviderComparisonMatrix';
 import { PerformanceDistribution } from './components/PerformanceDistribution';
 import { InsightsPanel } from './components/InsightsPanel';
+import { HowItWorks } from './components/HowItWorks';
 
 function App() {
   const [data, setData] = useState<ProviderWeekData[]>([]);
