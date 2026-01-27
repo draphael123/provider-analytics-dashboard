@@ -52,7 +52,7 @@ export function BarChart({ data, selectedMetric }: BarChartProps) {
           />
           <Tooltip 
             contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-            formatter={(value: any) => {
+            formatter={(value: string | number) => {
               if (selectedMetric === 'percentOver20Min') {
                 return `${Number(value).toFixed(1)}%`;
               }

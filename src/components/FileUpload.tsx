@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Upload, FileSpreadsheet } from 'lucide-react';
+import { FileSpreadsheet } from 'lucide-react';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;

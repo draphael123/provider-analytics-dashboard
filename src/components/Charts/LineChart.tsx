@@ -1,9 +1,13 @@
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { MetricType } from '../../types';
-import { getUniqueProviders } from '../../utils/dataTransformer';
+
+interface LineChartDataPoint {
+  week: string;
+  [provider: string]: string | number | null;
+}
 
 interface LineChartProps {
-  data: any[];
+  data: LineChartDataPoint[];
   selectedMetric: MetricType;
   selectedProviders: string[];
   allProviders: string[];
@@ -57,7 +61,7 @@ export function LineChart({ data, selectedMetric, selectedProviders, allProvider
           />
           <Tooltip 
             contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-            formatter={(value: any) => {
+            formatter={(value: string | number) => {
               if (selectedMetric === 'percentOver20Min') {
                 return `${Number(value).toFixed(1)}%`;
               }

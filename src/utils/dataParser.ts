@@ -1,6 +1,10 @@
 import * as XLSX from 'xlsx';
 import { ProviderWeekData } from '../types';
 
+type ExcelCellValue = string | number | boolean | null | undefined;
+type ExcelRow = ExcelCellValue[];
+type ExcelData = ExcelRow[];
+
 export function parseExcelFile(file: File): Promise<ProviderWeekData[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -12,7 +16,7 @@ export function parseExcelFile(file: File): Promise<ProviderWeekData[]> {
         const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: null });
         
-        const parsedData = parseProviderData(jsonData as any[][]);
+        const parsedData = parseProviderData(jsonData as ExcelData);
         resolve(parsedData);
       } catch (error) {
         reject(error);
@@ -24,7 +28,7 @@ export function parseExcelFile(file: File): Promise<ProviderWeekData[]> {
   });
 }
 
-export function parseProviderData(excelData: any[][]): ProviderWeekData[] {
+export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
   if (!excelData || excelData.length === 0) {
     return [];
   }

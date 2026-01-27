@@ -41,7 +41,7 @@ function App() {
   const allProviders = useMemo(() => getUniqueProviders(data), [data]);
   
   // Initialize selected providers to all providers when data loads
-  useMemo(() => {
+  useEffect(() => {
     if (data.length > 0 && selectedProviders.length === 0) {
       setSelectedProviders(allProviders);
     }
