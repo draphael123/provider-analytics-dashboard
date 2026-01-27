@@ -33,13 +33,31 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
     return [];
   }
 
-  const headers = excelData[0];
-  const dataRows = excelData.slice(1).filter(row => row && row.length > 0);
+  // Check if there are multiple header rows (common in Excel)
+  let headerRowIndex = 0;
+  let headers = excelData[0];
   
-  console.log('Excel headers:', headers);
+  // Look for the row with "Provider" or provider names
+  for (let i = 0; i < Math.min(5, excelData.length); i++) {
+    const row = excelData[i];
+    const firstCell = String(row[0] || '').toLowerCase();
+    if (firstCell.includes('provider') || (i > 0 && firstCell && !firstCell.match(/^\d+$/))) {
+      headerRowIndex = i;
+      headers = row;
+      break;
+    }
+  }
+  
+  const dataRows = excelData.slice(headerRowIndex + 1).filter(row => row && row.length > 0);
+  
+  console.log('=== EXCEL PARSING DEBUG ===');
+  console.log('Header row index:', headerRowIndex);
+  console.log('Excel headers (first 20):', headers.slice(0, 20));
+  console.log('All headers:', headers);
   console.log('Number of data rows:', dataRows.length);
   if (dataRows.length > 0) {
-    console.log('First data row sample:', dataRows[0]);
+    console.log('First data row (first 20 cols):', dataRows[0].slice(0, 20));
+    console.log('First data row (all):', dataRows[0]);
   }
   
   const result: ProviderWeekData[] = [];
@@ -49,17 +67,31 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
   const weekMap = new Map<string, { total?: number; over20?: number; percent?: number; avg?: number; hours?: number }>();
   
   // First, identify all week dates in the headers
-  const weekDates: Array<{ date: string; index: number }> = [];
+  const weekDates: Array<{ date: string; index: number; header: string }> = [];
   headers.forEach((header, idx) => {
     if (idx === providerColIndex) return;
     const headerStr = String(header || '').trim();
     const dateMatch = headerStr.match(/(\d{1,2}\/\d{1,2})/);
     if (dateMatch) {
-      weekDates.push({ date: dateMatch[1], index: idx });
+      weekDates.push({ date: dateMatch[1], index: idx, header: headerStr });
     }
   });
   
   console.log('Found week dates:', weekDates);
+  
+  // Also check for week patterns in adjacent rows (merged cells or multi-row headers)
+  if (headerRowIndex > 0) {
+    const prevRow = excelData[headerRowIndex - 1];
+    prevRow?.forEach((cell, idx) => {
+      if (idx === providerColIndex) return;
+      const cellStr = String(cell || '').trim();
+      const dateMatch = cellStr.match(/(\d{1,2}\/\d{1,2})/);
+      if (dateMatch && !weekDates.find(w => w.index === idx)) {
+        weekDates.push({ date: dateMatch[1], index: idx, header: cellStr });
+        console.log('Found week date in previous row:', { date: dateMatch[1], index: idx, header: cellStr });
+      }
+    });
+  }
   
   // Group columns by week - look for week headers and then find metric columns
   weekDates.forEach((weekDate, weekIdx) => {
@@ -67,48 +99,111 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
     const nextWeekIndex = weekIdx < weekDates.length - 1 ? weekDates[weekIdx + 1].index : headers.length;
     
     // Look backwards and forwards from the week date to find metric columns
-    const weekStart = Math.max(providerColIndex + 1, weekDate.index - 5);
+    // Start from the week date column itself, then scan adjacent columns
+    const weekStart = Math.max(providerColIndex + 1, weekDate.index);
     const weekEnd = Math.min(headers.length, nextWeekIndex);
     
     const weekData: { total?: number; over20?: number; percent?: number; avg?: number; hours?: number } = {};
     
+    console.log(`\nProcessing ${weekKey} (cols ${weekStart} to ${weekEnd - 1}):`);
+    
     // Scan columns in this week's range
     for (let col = weekStart; col < weekEnd; col++) {
-      const colHeader = String(headers[col] || '').trim().toLowerCase();
-      if (!colHeader) continue;
+      const colHeader = String(headers[col] || '').trim();
+      const colHeaderLower = colHeader.toLowerCase();
+      
+      if (!colHeader) {
+        // Check previous row if available
+        if (headerRowIndex > 0) {
+          const prevRowHeader = String(excelData[headerRowIndex - 1][col] || '').trim();
+          if (prevRowHeader) {
+            console.log(`  Col ${col}: Using header from previous row: "${prevRowHeader}"`);
+            const prevHeaderLower = prevRowHeader.toLowerCase();
+            
+            if (!weekData.total && (
+              prevHeaderLower === 'total' || 
+              prevHeaderLower.includes('total') && !prevHeaderLower.includes('over') && !prevHeaderLower.includes('%')
+            )) {
+              weekData.total = col;
+              console.log(`    → Mapped as Total`);
+            } else if (!weekData.over20 && (
+              prevHeaderLower.includes('over') && prevHeaderLower.includes('20') && !prevHeaderLower.includes('%')
+            )) {
+              weekData.over20 = col;
+              console.log(`    → Mapped as Over 20`);
+            } else if (!weekData.percent && (
+              prevHeaderLower.includes('%') || 
+              (prevHeaderLower.includes('percent') && prevHeaderLower.includes('20'))
+            )) {
+              weekData.percent = col;
+              console.log(`    → Mapped as %`);
+            } else if (!weekData.avg && (
+              prevHeaderLower.includes('avg') || 
+              prevHeaderLower.includes('average') || 
+              prevHeaderLower.includes('duration')
+            )) {
+              weekData.avg = col;
+              console.log(`    → Mapped as Avg`);
+            } else if (!weekData.hours && prevHeaderLower.includes('hour')) {
+              weekData.hours = col;
+              console.log(`    → Mapped as Hours`);
+            }
+            continue;
+          }
+        }
+        continue;
+      }
+      
+      console.log(`  Col ${col}: "${colHeader}"`);
       
       // Match column types more flexibly
       if (!weekData.total && (
-        colHeader === 'total' || 
-        colHeader.includes('total') && !colHeader.includes('over') && !colHeader.includes('%')
+        colHeaderLower === 'total' || 
+        colHeaderLower === 'total visits' ||
+        (colHeaderLower.includes('total') && !colHeaderLower.includes('over') && !colHeaderLower.includes('%'))
       )) {
         weekData.total = col;
+        console.log(`    → Mapped as Total`);
       } else if (!weekData.over20 && (
-        colHeader.includes('over') && colHeader.includes('20') && !colHeader.includes('%')
+        colHeaderLower.includes('over') && colHeaderLower.includes('20') && !colHeaderLower.includes('%') ||
+        colHeaderLower === 'over 20' ||
+        colHeaderLower === 'visits over 20'
       )) {
         weekData.over20 = col;
+        console.log(`    → Mapped as Over 20`);
       } else if (!weekData.percent && (
-        colHeader.includes('%') || 
-        (colHeader.includes('percent') && colHeader.includes('20')) ||
-        colHeader.includes('pct')
+        colHeaderLower.includes('%') || 
+        (colHeaderLower.includes('percent') && colHeaderLower.includes('20')) ||
+        colHeaderLower.includes('pct') ||
+        colHeaderLower === '% over 20' ||
+        colHeaderLower.includes('% over')
       )) {
         weekData.percent = col;
+        console.log(`    → Mapped as %`);
       } else if (!weekData.avg && (
-        colHeader.includes('avg') || 
-        colHeader.includes('average') || 
-        colHeader.includes('duration') ||
-        colHeader.includes('avg duration')
+        colHeaderLower.includes('avg') || 
+        colHeaderLower.includes('average') || 
+        colHeaderLower.includes('duration') ||
+        colHeaderLower === 'avg duration' ||
+        colHeaderLower === 'average duration'
       )) {
         weekData.avg = col;
-      } else if (!weekData.hours && colHeader.includes('hour')) {
+        console.log(`    → Mapped as Avg`);
+      } else if (!weekData.hours && (
+        colHeaderLower.includes('hour') ||
+        colHeaderLower.includes('hours')
+      )) {
         weekData.hours = col;
+        console.log(`    → Mapped as Hours`);
       }
     }
     
     // If we found at least one metric column, add this week
     if (Object.keys(weekData).length > 0) {
       weekMap.set(weekKey, weekData);
-      console.log(`Mapped ${weekKey}:`, weekData);
+      console.log(`✓ Mapped ${weekKey}:`, weekData);
+    } else {
+      console.log(`✗ No metrics found for ${weekKey}`);
     }
   });
   
