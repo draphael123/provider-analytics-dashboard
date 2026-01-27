@@ -14,7 +14,7 @@ interface ProviderStats {
   weeks: number;
 }
 
-export function ProviderComparisonMatrix({ data, selectedProviders, onProvidersChange }: ProviderComparisonMatrixProps) {
+export function ProviderComparisonMatrix({ data, selectedProviders }: ProviderComparisonMatrixProps) {
   const comparisonData = useMemo(() => {
     const statsMap = new Map<string, ProviderStats>();
 
