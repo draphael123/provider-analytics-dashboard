@@ -85,13 +85,13 @@ export function ScatterChart({ data }: ScatterChartProps) {
               borderRadius: '8px',
               color: 'var(--tooltip-text, #000)'
             }}
-            formatter={(value: number, name: string, props: any) => {
+            formatter={(value: number, name: string) => {
               if (name === 'percentOver20Min') {
                 return [`${value.toFixed(1)}%`, '% Over 20 Min'];
               }
               return [value.toLocaleString(), name];
             }}
-            labelFormatter={(label, payload) => {
+            labelFormatter={(_, payload) => {
               if (payload && payload[0]) {
                 return `Provider: ${payload[0].payload.provider}`;
               }

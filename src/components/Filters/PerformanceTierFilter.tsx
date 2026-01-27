@@ -9,7 +9,9 @@ interface PerformanceTierFilterProps {
 
 export function PerformanceTierFilter({ data, selectedTier, onTierChange }: PerformanceTierFilterProps) {
   const tiers = useMemo(() => {
-    if (data.length === 0) return [];
+    if (data.length === 0) {
+      return { top25: 0, bottom25: 0, median: 0 };
+    }
 
     // Calculate average % Over 20 Min for each provider
     const providerStats = new Map<string, { totalVisits: number; visitsOver20: number }>();
@@ -32,7 +34,9 @@ export function PerformanceTierFilter({ data, selectedTier, onTierChange }: Perf
       .filter(p => p > 0)
       .sort((a, b) => a - b);
 
-    if (percentages.length === 0) return [];
+    if (percentages.length === 0) {
+      return { top25: 0, bottom25: 0, median: 0 };
+    }
 
     const median = percentages[Math.floor(percentages.length / 2)];
     const topQuartile = percentages[Math.floor(percentages.length * 0.75)];
@@ -46,10 +50,10 @@ export function PerformanceTierFilter({ data, selectedTier, onTierChange }: Perf
   }, [data]);
 
   const tierOptions = [
-    { value: 'top25', label: 'Top 25%', description: `≥${tiers.top25?.toFixed(1) || 0}%` },
-    { value: 'aboveAvg', label: 'Above Average', description: `≥${tiers.median?.toFixed(1) || 0}%` },
-    { value: 'belowAvg', label: 'Below Average', description: `<${tiers.median?.toFixed(1) || 0}%` },
-    { value: 'bottom25', label: 'Bottom 25%', description: `<${tiers.bottom25?.toFixed(1) || 0}%` },
+    { value: 'top25', label: 'Top 25%', description: `≥${tiers.top25.toFixed(1)}%` },
+    { value: 'aboveAvg', label: 'Above Average', description: `≥${tiers.median.toFixed(1)}%` },
+    { value: 'belowAvg', label: 'Below Average', description: `<${tiers.median.toFixed(1)}%` },
+    { value: 'bottom25', label: 'Bottom 25%', description: `<${tiers.bottom25.toFixed(1)}%` },
   ];
 
   return (

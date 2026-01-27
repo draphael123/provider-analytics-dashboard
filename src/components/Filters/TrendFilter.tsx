@@ -8,29 +8,6 @@ interface TrendFilterProps {
 }
 
 export function TrendFilter({ data, selectedTrend, onTrendChange }: TrendFilterProps) {
-  const providerTrends = useMemo(() => {
-    const trends = new Map<string, number>();
-    
-    data.forEach(item => {
-      // Group by provider and week to calculate trends
-      const providerData = data.filter(d => d.provider === item.provider);
-      if (providerData.length > 1) {
-        const sorted = [...providerData].sort((a, b) => a.week.localeCompare(b.week));
-        const mid = Math.floor(sorted.length / 2);
-        const firstHalf = sorted.slice(0, mid);
-        const secondHalf = sorted.slice(mid);
-        
-        const firstAvg = firstHalf.reduce((sum, d) => sum + d.percentOver20Min, 0) / firstHalf.length;
-        const secondAvg = secondHalf.reduce((sum, d) => sum + d.percentOver20Min, 0) / secondHalf.length;
-        const trend = secondAvg - firstAvg;
-        
-        trends.set(item.provider, trend);
-      }
-    });
-    
-    return trends;
-  }, [data]);
-
   const trendOptions = [
     { value: 'improving', label: 'Improving', description: 'Increasing % Over 20 Min' },
     { value: 'declining', label: 'Declining', description: 'Decreasing % Over 20 Min' },
