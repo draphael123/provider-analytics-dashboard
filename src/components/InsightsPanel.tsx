@@ -62,30 +62,34 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
     });
 
     const avgPercent = stats.reduce((sum, s) => sum + s.percentOver20Min, 0) / stats.length;
+    
+    // Top Performers: Providers with LOWEST % over 20 minutes (best performers)
     const topPerformers = [...stats]
-      .filter(s => s.percentOver20Min >= 20)
-      .sort((a, b) => b.percentOver20Min - a.percentOver20Min)
+      .filter(s => s.totalVisits > 10)
+      .sort((a, b) => a.percentOver20Min - b.percentOver20Min)
       .slice(0, 3);
     
+    // Most Improved: Providers with NEGATIVE trend (decreasing % over 20 minutes is good)
     const mostImproved = [...stats]
-      .filter(s => s.trend > 0)
-      .sort((a, b) => b.trend - a.trend)
+      .filter(s => s.trend < 0 && s.totalVisits > 10)
+      .sort((a, b) => a.trend - b.trend) // Most negative (best improvement)
       .slice(0, 3);
 
+    // Needs Attention: Providers with HIGHEST % over 20 minutes (worst performers)
     const needsAttention = [...stats]
-      .filter(s => s.visitsOver20Min > 0 && s.totalVisits > 10)
-      .sort((a, b) => a.visitsOver20Min - b.visitsOver20Min)
+      .filter(s => s.totalVisits > 10)
+      .sort((a, b) => b.percentOver20Min - a.percentOver20Min)
       .slice(0, 3);
 
     const insightsList: Array<{ type: string; icon: any; title: string; description: string; color: string }> = [];
 
-    if (topPerformers.length > 0) {
+    if (topPerformers.length > 0 && topPerformers[0].percentOver20Min < 10) {
       insightsList.push({
         type: 'top',
         icon: Award,
         title: 'Top Performers',
-        description: `${topPerformers.map(p => p.provider).join(', ')} ${topPerformers.length === 1 ? 'has' : 'have'} ${topPerformers[0].percentOver20Min.toFixed(1)}%+ visits over 20 minutes`,
-        color: 'text-green-600 bg-green-50 border-green-200',
+        description: `${topPerformers.map(p => p.provider).join(', ')} ${topPerformers.length === 1 ? 'has' : 'have'} the lowest percentage of visits over 20 minutes (${topPerformers[0].percentOver20Min.toFixed(1)}%)`,
+        color: 'text-green-600 bg-green-50 border-green-200 dark:bg-green-900/30 dark:border-green-700',
       });
     }
 
@@ -94,29 +98,28 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
         type: 'improved',
         icon: TrendingUp,
         title: 'Most Improved',
-        description: `${mostImproved[0].provider} improved by ${mostImproved[0].trend.toFixed(1)}% compared to earlier period`,
-        color: 'text-blue-600 bg-blue-50 border-blue-200',
+        description: `${mostImproved[0].provider} reduced visits over 20 minutes by ${Math.abs(mostImproved[0].trend).toFixed(1)}% compared to earlier period`,
+        color: 'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-900/30 dark:border-blue-700',
       });
     }
 
-    if (needsAttention.length > 0) {
-      const totalVisitsOver20 = needsAttention.reduce((sum, p) => sum + p.visitsOver20Min, 0);
+    if (needsAttention.length > 0 && needsAttention[0].percentOver20Min > 10) {
       insightsList.push({
         type: 'attention',
         icon: AlertCircle,
         title: 'Needs Attention',
-        description: `${needsAttention.map(p => p.provider).join(', ')} ${needsAttention.length === 1 ? 'has' : 'have'} ${totalVisitsOver20} visit${totalVisitsOver20 === 1 ? '' : 's'} over 20 minutes (lowest counts)`,
-        color: 'text-red-600 bg-red-50 border-red-200',
+        description: `${needsAttention.map(p => p.provider).join(', ')} ${needsAttention.length === 1 ? 'has' : 'have'} the highest percentage of visits over 20 minutes (${needsAttention[0].percentOver20Min.toFixed(1)}%). Consider additional support or training.`,
+        color: 'text-red-600 bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-700',
       });
     }
 
-    if (avgPercent < 10) {
+    if (avgPercent > 15) {
       insightsList.push({
         type: 'overall',
         icon: AlertCircle,
         title: 'Overall Performance',
-        description: `Team average is ${avgPercent.toFixed(1)}%, below the 20% target. Consider additional training or support.`,
-        color: 'text-amber-600 bg-amber-50 border-amber-200',
+        description: `Team average is ${avgPercent.toFixed(1)}% visits over 20 minutes, which is above the target. Focus on reducing visit duration through training and process improvements.`,
+        color: 'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-700',
       });
     }
 
