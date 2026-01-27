@@ -271,7 +271,6 @@ function App() {
                     onVolumeChange={setVisitVolume}
                   />
                   <TrendFilter
-                    data={data}
                     selectedTrend={trend}
                     onTrendChange={setTrend}
                   />

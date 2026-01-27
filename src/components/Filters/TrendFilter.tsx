@@ -1,13 +1,9 @@
-import { useMemo } from 'react';
-import { ProviderWeekData } from '../../types';
-
 interface TrendFilterProps {
-  data: ProviderWeekData[];
   selectedTrend: string | null;
   onTrendChange: (trend: string | null) => void;
 }
 
-export function TrendFilter({ data, selectedTrend, onTrendChange }: TrendFilterProps) {
+export function TrendFilter({ selectedTrend, onTrendChange }: TrendFilterProps) {
   const trendOptions = [
     { value: 'improving', label: 'Improving', description: 'Increasing % Over 20 Min' },
     { value: 'declining', label: 'Declining', description: 'Decreasing % Over 20 Min' },
