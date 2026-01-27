@@ -29,7 +29,7 @@ export function SummaryCards({ stats }: SummaryCardsProps) {
     {
       title: 'Trend',
       value: stats.trendValue !== 0 ? `${stats.trendValue > 0 ? '+' : ''}${stats.trendValue.toFixed(1)}%` : 'No change',
-      icon: stats.trend === 'up' ? TrendingUp : stats.trend === 'down' ? TrendingDown : Minus,
+      icon: stats.trend === 'down' ? TrendingDown : stats.trend === 'up' ? TrendingUp : Minus,
       trend: stats.trend,
     },
   ];
@@ -58,9 +58,9 @@ export function SummaryCards({ stats }: SummaryCardsProps) {
               {card.icon && (
                 <div
                   className={`p-3 rounded-full transition-colors ${
-                    card.trend === 'up'
+                    card.trend === 'down'
                       ? 'bg-gradient-to-br from-green-400 to-emerald-500 text-white shadow-lg'
-                      : card.trend === 'down'
+                      : card.trend === 'up'
                       ? 'bg-gradient-to-br from-red-400 to-rose-500 text-white shadow-lg'
                       : 'bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-700 dark:to-gray-600 text-white'
                   }`}
