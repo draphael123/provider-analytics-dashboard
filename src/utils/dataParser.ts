@@ -36,6 +36,10 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
   const headers = excelData[0];
   const dataRows = excelData.slice(1);
   
+  console.log('Excel headers:', headers);
+  console.log('Number of data rows:', dataRows.length);
+  console.log('First data row sample:', dataRows[0]);
+  
   const result: ProviderWeekData[] = [];
   
   // Find the provider column index (usually first column)
@@ -44,17 +48,14 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
   // Group columns by week
   const weekMap = new Map<string, { total?: number; over20?: number; percent?: number; avg?: number; hours?: number }>();
   
+  // First pass: Look for week headers that contain the week date
   headers.forEach((header, idx) => {
     if (idx === providerColIndex) return;
     
     const headerStr = String(header || '').trim();
     if (!headerStr) return;
     
-    // Try to identify week columns
-    // Pattern 1: "Week of 11/1" followed by "Total", "Over 20", "% Over 20", "Avg Duration", "Hours"
-    // Pattern 2: Columns might be grouped by week
-    
-    // Look for week indicators
+    // Try multiple patterns for week identification
     let weekMatch = headerStr.match(/week\s+of\s+(\d{1,2}\/\d{1,2})/i);
     if (!weekMatch) {
       weekMatch = headerStr.match(/(\d{1,2}\/\d{1,2})/);
@@ -69,21 +70,27 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
       const weekData = weekMap.get(weekKey)!;
       const lowerHeader = headerStr.toLowerCase();
       
-      if (lowerHeader.includes('total') && !lowerHeader.includes('over')) {
+      // More flexible matching for column types
+      if (lowerHeader.includes('total') && !lowerHeader.includes('over') && !lowerHeader.includes('%')) {
         weekData.total = idx;
-      } else if (lowerHeader.includes('over') && lowerHeader.includes('20')) {
-        if (lowerHeader.includes('%') || lowerHeader.includes('percent')) {
-          weekData.percent = idx;
-        } else {
-          weekData.over20 = idx;
-        }
-      } else if (lowerHeader.includes('avg') || lowerHeader.includes('average')) {
+        console.log(`Found Total column for ${weekKey} at index ${idx}`);
+      } else if (lowerHeader.includes('over') && lowerHeader.includes('20') && !lowerHeader.includes('%')) {
+        weekData.over20 = idx;
+        console.log(`Found Over 20 column for ${weekKey} at index ${idx}`);
+      } else if (lowerHeader.includes('%') || (lowerHeader.includes('percent') && lowerHeader.includes('20'))) {
+        weekData.percent = idx;
+        console.log(`Found % column for ${weekKey} at index ${idx}`);
+      } else if (lowerHeader.includes('avg') || lowerHeader.includes('average') || lowerHeader.includes('duration')) {
         weekData.avg = idx;
+        console.log(`Found Avg column for ${weekKey} at index ${idx}`);
       } else if (lowerHeader.includes('hour')) {
         weekData.hours = idx;
+        console.log(`Found Hours column for ${weekKey} at index ${idx}`);
       }
     }
   });
+  
+  console.log('Week map after first pass:', Array.from(weekMap.entries()));
   
   // Alternative: If week grouping didn't work, try sequential column grouping
   // Assume columns are grouped as: Provider | Week1 Total | Week1 Over20 | Week1 % | Week1 Avg | Week2 Total | ...
@@ -131,6 +138,61 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
         }
         
         colOffset++;
+      }
+    }
+  }
+  
+  // If weekMap is empty or incomplete, try alternative parsing strategies
+  if (weekMap.size === 0 || Array.from(weekMap.values()).some(w => !w.total && !w.over20)) {
+    console.log('Week map incomplete, trying alternative parsing...');
+    
+    // Strategy: Look for patterns where columns are grouped sequentially
+    // Try to find week indicators and then look for metric columns nearby
+    const weekIndicators: Array<{ index: number; week: string }> = [];
+    
+    headers.forEach((header, idx) => {
+      if (idx === providerColIndex) return;
+      const headerStr = String(header || '').trim();
+      if (!headerStr) return;
+      
+      const weekMatch = headerStr.match(/(\d{1,2}\/\d{1,2})/);
+      if (weekMatch) {
+        weekIndicators.push({ index: idx, week: `Week of ${weekMatch[1]}` });
+      }
+    });
+    
+    // If we found week indicators, try to map columns around them
+    if (weekIndicators.length > 0) {
+      console.log('Found week indicators:', weekIndicators);
+      
+      for (let i = 0; i < weekIndicators.length; i++) {
+        const weekInfo = weekIndicators[i];
+        const nextWeekIndex = i < weekIndicators.length - 1 ? weekIndicators[i + 1].index : headers.length;
+        const weekKey = weekInfo.week;
+        
+        if (!weekMap.has(weekKey)) {
+          weekMap.set(weekKey, {});
+        }
+        
+        const weekData = weekMap.get(weekKey)!;
+        
+        // Look for metric columns between this week indicator and the next
+        for (let col = weekInfo.index + 1; col < nextWeekIndex && col < headers.length; col++) {
+          const colHeader = String(headers[col] || '').toLowerCase().trim();
+          if (!colHeader) continue;
+          
+          if (!weekData.total && (colHeader.includes('total') || colHeader === 'total')) {
+            weekData.total = col;
+          } else if (!weekData.over20 && (colHeader.includes('over') && colHeader.includes('20') && !colHeader.includes('%'))) {
+            weekData.over20 = col;
+          } else if (!weekData.percent && (colHeader.includes('%') || (colHeader.includes('percent') && colHeader.includes('20')))) {
+            weekData.percent = col;
+          } else if (!weekData.avg && (colHeader.includes('avg') || colHeader.includes('average') || colHeader.includes('duration'))) {
+            weekData.avg = col;
+          } else if (!weekData.hours && colHeader.includes('hour')) {
+            weekData.hours = col;
+          }
+        }
       }
     }
   }
@@ -202,23 +264,60 @@ export function parseProviderData(excelData: ExcelData): ProviderWeekData[] {
   }
   
   // Process data rows
-  dataRows.forEach(row => {
+  dataRows.forEach((row, rowIdx) => {
     const provider = String(row[providerColIndex] || '').trim();
     if (!provider || provider === 'Provider' || provider === '') return;
     
     // For each week
     weekMap.forEach((indices, week) => {
-      const totalVisits = parseFloat(String(row[indices.total ?? -1] || 0)) || 0;
-      const visitsOver20Min = parseFloat(String(row[indices.over20 ?? -1] || 0)) || 0;
-      let percentOver20Min = parseFloat(String(row[indices.percent ?? -1] || 0)) || 0;
+      // Get raw values from the row
+      const totalVisitsRaw = row[indices.total ?? -1];
+      const visitsOver20MinRaw = row[indices.over20 ?? -1];
+      const percentOver20MinRaw = row[indices.percent ?? -1];
+      const avgDurationRaw = row[indices.avg ?? -1];
+      const hoursOn20PlusMinRaw = indices.hours ? row[indices.hours] : undefined;
+      
+      // Parse values, handling various formats
+      let totalVisits = 0;
+      let visitsOver20Min = 0;
+      let percentOver20Min = 0;
+      let avgDuration = 0;
+      
+      if (totalVisitsRaw !== null && totalVisitsRaw !== undefined && totalVisitsRaw !== '') {
+        totalVisits = typeof totalVisitsRaw === 'number' ? totalVisitsRaw : parseFloat(String(totalVisitsRaw)) || 0;
+      }
+      
+      if (visitsOver20MinRaw !== null && visitsOver20MinRaw !== undefined && visitsOver20MinRaw !== '') {
+        visitsOver20Min = typeof visitsOver20MinRaw === 'number' ? visitsOver20MinRaw : parseFloat(String(visitsOver20MinRaw)) || 0;
+      }
+      
+      if (percentOver20MinRaw !== null && percentOver20MinRaw !== undefined && percentOver20MinRaw !== '') {
+        percentOver20Min = typeof percentOver20MinRaw === 'number' ? percentOver20MinRaw : parseFloat(String(percentOver20MinRaw)) || 0;
+      }
+      
+      if (avgDurationRaw !== null && avgDurationRaw !== undefined && avgDurationRaw !== '') {
+        avgDuration = typeof avgDurationRaw === 'number' ? avgDurationRaw : parseFloat(String(avgDurationRaw)) || 0;
+      }
       
       // Calculate percentage if not provided
       if (percentOver20Min === 0 && totalVisits > 0) {
         percentOver20Min = (visitsOver20Min / totalVisits) * 100;
       }
       
-      const avgDuration = parseFloat(String(row[indices.avg ?? -1] || 0)) || 0;
-      const hoursOn20PlusMin = indices.hours ? parseFloat(String(row[indices.hours] || 0)) || undefined : undefined;
+      const hoursOn20PlusMin = hoursOn20PlusMinRaw !== null && hoursOn20PlusMinRaw !== undefined && hoursOn20PlusMinRaw !== ''
+        ? (typeof hoursOn20PlusMinRaw === 'number' ? hoursOn20PlusMinRaw : parseFloat(String(hoursOn20PlusMinRaw)) || undefined)
+        : undefined;
+      
+      // Debug first few rows
+      if (rowIdx < 2 && week === Array.from(weekMap.keys())[0]) {
+        console.log(`Parsing row ${rowIdx} for ${provider}, week ${week}:`, {
+          totalVisitsRaw,
+          totalVisits,
+          visitsOver20MinRaw,
+          visitsOver20Min,
+          indices
+        });
+      }
       
       result.push({
         provider,
