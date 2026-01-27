@@ -13,6 +13,7 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
     const providerStats = new Map<string, {
       provider: string;
       totalVisits: number;
+      visitsOver20Min: number;
       percentOver20Min: number;
       trend: number;
       weeks: number;
@@ -23,11 +24,13 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
       const existing = providerStats.get(item.provider);
       if (existing) {
         existing.totalVisits += item.totalVisits;
+        existing.visitsOver20Min += item.visitsOver20Min;
         existing.weeks += 1;
       } else {
         providerStats.set(item.provider, {
           provider: item.provider,
           totalVisits: item.totalVisits,
+          visitsOver20Min: item.visitsOver20Min,
           percentOver20Min: item.percentOver20Min,
           trend: 0,
           weeks: 1,
@@ -40,6 +43,7 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
       const providerData = data.filter(d => d.provider === stat.provider);
       const totalVisits = providerData.reduce((sum, d) => sum + d.totalVisits, 0);
       const visitsOver20 = providerData.reduce((sum, d) => sum + d.visitsOver20Min, 0);
+      stat.visitsOver20Min = visitsOver20;
       stat.percentOver20Min = totalVisits > 0 ? (visitsOver20 / totalVisits) * 100 : 0;
 
       // Calculate trend
@@ -69,8 +73,8 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
       .slice(0, 3);
 
     const needsAttention = [...stats]
-      .filter(s => s.percentOver20Min < 10 && s.totalVisits > 10)
-      .sort((a, b) => a.percentOver20Min - b.percentOver20Min)
+      .filter(s => s.visitsOver20Min > 0 && s.totalVisits > 10)
+      .sort((a, b) => a.visitsOver20Min - b.visitsOver20Min)
       .slice(0, 3);
 
     const insightsList: Array<{ type: string; icon: any; title: string; description: string; color: string }> = [];
@@ -96,11 +100,12 @@ export function InsightsPanel({ data }: InsightsPanelProps) {
     }
 
     if (needsAttention.length > 0) {
+      const totalVisitsOver20 = needsAttention.reduce((sum, p) => sum + p.visitsOver20Min, 0);
       insightsList.push({
         type: 'attention',
         icon: AlertCircle,
         title: 'Needs Attention',
-        description: `${needsAttention.map(p => p.provider).join(', ')} ${needsAttention.length === 1 ? 'has' : 'have'} less than 10% visits over 20 minutes`,
+        description: `${needsAttention.map(p => p.provider).join(', ')} ${needsAttention.length === 1 ? 'has' : 'have'} ${totalVisitsOver20} visit${totalVisitsOver20 === 1 ? '' : 's'} over 20 minutes (lowest counts)`,
         color: 'text-red-600 bg-red-50 border-red-200',
       });
     }
