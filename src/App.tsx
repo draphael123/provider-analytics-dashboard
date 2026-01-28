@@ -318,9 +318,6 @@ function App() {
     }
   };
 
-  const handleDismissWarning = (id: string) => {
-    setDismissedWarnings(prev => new Set([...prev, id]));
-  };
 
   const hasActiveFilters = selectedProviders.length > 0 || weekRange !== null || thresholdPercent !== null || 
     performanceTier !== null || visitVolume !== null || trend !== null || minimumVisits !== null;
