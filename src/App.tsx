@@ -207,9 +207,10 @@ function App() {
 
       return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
+          <a href="#main-content" className="skip-to-main">Skip to main content</a>
           <Header />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" role="main">
         {/* How It Works Section - Always visible */}
         <HowItWorks />
         
@@ -233,10 +234,31 @@ function App() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">Filters</h2>
                   <div className="flex items-center gap-2">
+                    <FilterPresets
+                      currentFilters={{
+                        selectedProviders,
+                        weekRange,
+                        thresholdPercent,
+                        performanceTier: performanceTier || null,
+                        visitVolume: visitVolume || null,
+                        trend: trend || null,
+                        minimumVisits,
+                      }}
+                      onLoadPreset={(preset) => {
+                        setSelectedProviders(preset.filters.selectedProviders);
+                        setWeekRange(preset.filters.weekRange);
+                        setThresholdPercent(preset.filters.thresholdPercent);
+                        setPerformanceTier(preset.filters.performanceTier);
+                        setVisitVolume(preset.filters.visitVolume);
+                        setTrend(preset.filters.trend);
+                        setMinimumVisits(preset.filters.minimumVisits);
+                      }}
+                    />
                     {hasActiveFilters && (
                       <button
                         onClick={clearAllFilters}
                         className="px-4 py-2 text-sm bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all"
+                        aria-label="Clear all filters"
                       >
                         Clear All
                       </button>
@@ -464,10 +486,70 @@ function App() {
 
             {/* Data Table */}
             <DataTable data={filteredData} thresholdPercent={thresholdPercent || 20} />
+
+            {/* Advanced Analytics */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Advanced Analytics</h2>
+                <button
+                  onClick={() => setShowAdvancedAnalytics(!showAdvancedAnalytics)}
+                  className="px-4 py-2 text-sm bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-lg transition-all"
+                  aria-label={showAdvancedAnalytics ? 'Hide advanced analytics' : 'Show advanced analytics'}
+                >
+                  {showAdvancedAnalytics ? 'Hide' : 'Show'} Analytics
+                </button>
+              </div>
+              {showAdvancedAnalytics && (
+                <div className="space-y-6">
+                  <AdvancedAnalytics 
+                    data={filteredData}
+                    selectedProvider={selectedProviderDetail}
+                  />
+                  <ForecastingPanel data={filteredData} />
+                  <AnomalyDetectionPanel data={filteredData} />
+                </div>
+              )}
+            </div>
+
+            {/* Export Section */}
+            <div className="mb-6 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Export & Reporting</h3>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => exportToCSV(filteredData, `provider-data-${new Date().toISOString().split('T')[0]}.csv`)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-lg transition-all"
+                  aria-label="Export data to CSV"
+                >
+                  Export to CSV
+                </button>
+                <button
+                  onClick={() => exportToPDF(filteredData, summaryStats)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 rounded-lg transition-all"
+                  aria-label="Export data to PDF"
+                >
+                  Export to PDF
+                </button>
+                <button
+                  onClick={() => {
+                    const html = generateReportHTML(filteredData, summaryStats, []);
+                    const blob = new Blob([html], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg transition-all"
+                  aria-label="Generate HTML report"
+                >
+                  Generate HTML Report
+                </button>
+              </div>
+            </div>
           </>
-          )}
-        </div>
-      </main>
+        )}
+      </div>
+    </main>
+    
+    {/* Alerts Panel */}
+    <AlertsPanel data={filteredData} thresholdPercent={thresholdPercent || 20} />
     
     {/* Provider Detail View Modal */}
     {selectedProviderDetail && (
