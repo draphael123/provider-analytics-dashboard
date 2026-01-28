@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { ProviderWeekData, MetricType } from './types';
 import { parseExcelFile } from './utils/dataParser';
 import { loadDefaultExcelFile } from './utils/fileLoader';
@@ -6,10 +6,13 @@ import { calculateSummaryStats, filterData } from './utils/calculations';
 import { getUniqueProviders } from './utils/dataTransformer';
 import { useFilters } from './hooks/useFilters';
 import { useChartData } from './hooks/useChartData';
+import { useToast } from './hooks/useToast';
+import { useURLState } from './hooks/useURLState';
+import { useFilterHistory } from './hooks/useFilterHistory';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { Header } from './components/Header';
 import { FileUpload } from './components/FileUpload';
 import { ProviderFilter } from './components/Filters/ProviderFilter';
-import { WeekRangeFilter } from './components/Filters/WeekRangeFilter';
 import { MetricFilter } from './components/Filters/MetricFilter';
 import { ThresholdFilter } from './components/Filters/ThresholdFilter';
 import { PerformanceTierFilter } from './components/Filters/PerformanceTierFilter';
@@ -42,6 +45,16 @@ import { AdvancedAnalytics } from './components/AdvancedAnalytics';
 import { ForecastingPanel } from './components/ForecastingPanel';
 import { AnomalyDetectionPanel } from './components/AnomalyDetectionPanel';
 import { exportToCSV, exportToPDF, generateReportHTML } from './utils/exportHelpers';
+import { ToastContainer } from './components/Toast';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { GlobalSearch } from './components/GlobalSearch';
+import { DataRefresh } from './components/DataRefresh';
+import { ShareButton } from './components/ShareButton';
+import { DataValidationWarnings } from './components/DataValidationWarnings';
+import { PeriodComparison } from './components/PeriodComparison';
+import { PrintView } from './components/PrintView';
+import { LoadingSkeleton } from './components/LoadingSkeleton';
+import { exportChartAsPNG } from './utils/chartExport';
 
 function App() {
   const [data, setData] = useState<ProviderWeekData[]>([]);
@@ -53,6 +66,18 @@ function App() {
   const [selectedProviderDetail, setSelectedProviderDetail] = useState<string | null>(null);
   const [showCommunication, setShowCommunication] = useState<string | null>(null);
   const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false);
+  const [showForecasting, setShowForecasting] = useState(false);
+  const [showAnomalyDetection, setShowAnomalyDetection] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | undefined>(undefined);
+  const [showPrintView, setShowPrintView] = useState(false);
+  const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set());
+  const [showSearch, setShowSearch] = useState(false);
+  const lineChartRef = useRef<HTMLDivElement>(null);
+  const barChartRef = useRef<HTMLDivElement>(null);
+  
+  const { toasts, success, error, removeToast } = useToast();
+  const { updateURL, getShareableLink, initialFilters } = useURLState();
+  const { saveState, undo, redo, canUndo, canRedo } = useFilterHistory();
 
   const {
     filteredData,
@@ -74,6 +99,72 @@ function App() {
     setMinimumVisits,
     clearAllFilters,
   } = useFilters(data);
+
+  // Apply URL filters on mount
+  useEffect(() => {
+    if (Object.keys(initialFilters).length > 0) {
+      if (initialFilters.selectedProviders) {
+        setSelectedProviders(initialFilters.selectedProviders);
+      }
+      if (initialFilters.weekRange) {
+        setWeekRange(initialFilters.weekRange);
+      }
+      if (initialFilters.thresholdPercent !== undefined) {
+        setThresholdPercent(initialFilters.thresholdPercent);
+      }
+      if (initialFilters.performanceTier) {
+        setPerformanceTier(initialFilters.performanceTier as any);
+      }
+      if (initialFilters.visitVolume) {
+        setVisitVolume(initialFilters.visitVolume as any);
+      }
+      if (initialFilters.trend) {
+        setTrend(initialFilters.trend as any);
+      }
+      if (initialFilters.minimumVisits !== undefined) {
+        setMinimumVisits(initialFilters.minimumVisits);
+      }
+    }
+  }, []); // Only run on mount
+
+  // Update URL when filters change
+  useEffect(() => {
+    updateURL({
+      selectedProviders,
+      weekRange,
+      thresholdPercent,
+      performanceTier,
+      visitVolume,
+      trend,
+      minimumVisits,
+    });
+    
+    // Save to history
+    saveState({
+      selectedProviders,
+      weekRange,
+      thresholdPercent,
+      performanceTier,
+      visitVolume,
+      trend,
+      minimumVisits,
+    });
+  }, [selectedProviders, weekRange, thresholdPercent, performanceTier, visitVolume, trend, minimumVisits]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onExport: () => {
+      exportToCSV(filteredData, `provider-data-${new Date().toISOString().split('T')[0]}.csv`);
+      success('Data exported to CSV');
+    },
+    onRefresh: handleRefresh,
+    onSearch: () => setShowSearch(true),
+    onClearFilters: clearAllFilters,
+    onCloseModal: () => {
+      if (selectedProviderDetail) setSelectedProviderDetail(null);
+      if (showCommunication) setShowCommunication(null);
+    },
+  });
 
   const allProviders = useMemo(() => getUniqueProviders(data), [data]);
   
@@ -161,7 +252,7 @@ function App() {
       const timeoutId = setTimeout(() => {
         console.error('File loading timeout - taking too long');
         setIsLoading(false);
-        alert('Loading timeout. Please try uploading the file manually.');
+        error('Loading timeout. Please try uploading the file manually.');
       }, 30000); // 30 second timeout
       
       try {
@@ -176,13 +267,15 @@ function App() {
         }
         
         setData(parsedData);
+        setLastUpdated(new Date());
         setIsLoading(false);
-      } catch (error) {
+        success('Data loaded successfully');
+      } catch (err) {
         clearTimeout(timeoutId);
-        console.error('Error loading default file:', error);
+        console.error('Error loading default file:', err);
         // If default file fails, show upload UI
         setIsLoading(false);
-        alert(`Failed to load default data file. Please upload the Excel file manually.\n\nError: ${error instanceof Error ? error.message : String(error)}`);
+        error(`Failed to load default data file. Please upload the Excel file manually.\n\nError: ${err instanceof Error ? err.message : String(err)}`);
       }
     };
     
@@ -194,46 +287,115 @@ function App() {
     try {
       const parsedData = await parseExcelFile(file);
       setData(parsedData);
-    } catch (error) {
-      console.error('Error parsing file:', error);
-      alert('Error parsing Excel file. Please ensure the file format is correct.');
+      setLastUpdated(new Date());
+      success('File uploaded and parsed successfully');
+    } catch (err) {
+      console.error('Error parsing file:', err);
+      error('Error parsing Excel file. Please ensure the file format is correct.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleExportChart = async (chartRef: React.RefObject<HTMLDivElement>, filename: string) => {
+    if (chartRef.current) {
+      try {
+        await exportChartAsPNG(chartRef.current, filename);
+        success('Chart exported successfully');
+      } catch (err) {
+        error('Failed to export chart');
+      }
+    }
+  };
+
+  const handleDismissWarning = (id: string) => {
+    setDismissedWarnings(prev => new Set([...prev, id]));
   };
 
   const hasActiveFilters = selectedProviders.length > 0 || weekRange !== null || thresholdPercent !== null || 
     performanceTier !== null || visitVolume !== null || trend !== null || minimumVisits !== null;
 
       return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
-          <a href="#main-content" className="skip-to-main">Skip to main content</a>
-          <Header />
-      
-      <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" role="main">
+        <ErrorBoundary>
+          <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
+            <a href="#main-content" className="skip-to-main">Skip to main content</a>
+            <Header />
+        
+        <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" role="main">
+          {showSearch && (
+            <GlobalSearch
+              data={data}
+              onResultClick={(result) => {
+                if (result.type === 'provider') {
+                  setSelectedProviders([result.value]);
+                }
+                setShowSearch(false);
+              }}
+            />
+          )}
         {/* How It Works Section - Always visible */}
         <HowItWorks />
         
         <div className="py-8">
           {isLoading ? (
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 dark:border-primary-400 mx-auto mb-4"></div>
-              <p className="text-gray-600 dark:text-gray-400">Loading data...</p>
+            <div className="space-y-6">
+              <LoadingSkeleton />
+              <LoadingSkeleton />
+              <LoadingSkeleton />
             </div>
-          </div>
-        ) : data.length === 0 ? (
+          ) : data.length === 0 ? (
           <div className="max-w-2xl mx-auto mt-8">
             <FileUpload onFileSelect={handleFileUpload} isLoading={isLoading} />
           </div>
         ) : (
           <>
+            {/* Data Validation Warnings */}
+            <DataValidationWarnings
+              data={data}
+              onDismiss={handleDismissWarning}
+              dismissedWarnings={dismissedWarnings}
+            />
+
             {/* Filters Section */}
             <div className="mb-6">
               <div className="bg-gradient-to-br from-white to-indigo-50/30 dark:from-gray-900 dark:to-indigo-950/50 rounded-lg shadow-lg border-2 border-indigo-200 dark:border-indigo-800 p-6 transition-all">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">Filters</h2>
                   <div className="flex items-center gap-2">
+                    <GlobalSearch
+                      data={data}
+                      onResultClick={(result) => {
+                        if (result.type === 'provider') {
+                          setSelectedProviders([result.value]);
+                        }
+                      }}
+                    />
+                    <ShareButton shareableLink={getShareableLink()} />
+                    <DataRefresh
+                      onRefresh={handleRefresh}
+                      lastUpdated={lastUpdated}
+                      autoRefreshInterval={15} // 15 minutes
+                    />
+                    {(canUndo || canRedo) && (
+                      <div className="flex gap-1">
+                        <button
+                          onClick={undo}
+                          disabled={!canUndo}
+                          className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded disabled:opacity-50"
+                          title="Undo (Ctrl+Z)"
+                        >
+                          ↶
+                        </button>
+                        <button
+                          onClick={redo}
+                          disabled={!canRedo}
+                          className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded disabled:opacity-50"
+                          title="Redo (Ctrl+Y)"
+                        >
+                          ↷
+                        </button>
+                      </div>
+                    )}
                     <FilterPresets
                       currentFilters={{
                         selectedProviders,
@@ -358,11 +520,18 @@ function App() {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                   {/* Line/Area Chart */}
-                  <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+                  <div ref={lineChartRef} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Week-over-Week Trend</h3>
                         <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleExportChart(lineChartRef, 'line-chart.png')}
+                            className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                            title="Export as PNG"
+                          >
+                            📥
+                          </button>
                           <button
                             onClick={() => setLineChartType('line')}
                             className={`px-3 py-1 text-xs rounded-md transition-colors ${
@@ -414,9 +583,18 @@ function App() {
                   </div>
 
                   {/* Bar Chart */}
-                  <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
+                  <div ref={barChartRef} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6 transition-colors">
                     <div className="mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Provider Comparison</h3>
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Provider Comparison</h3>
+                        <button
+                          onClick={() => handleExportChart(barChartRef, 'bar-chart.png')}
+                          className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                          title="Export as PNG"
+                        >
+                          📥
+                        </button>
+                      </div>
                       <div className="flex items-center gap-4">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Metric:</span>
                         <select
@@ -511,19 +689,30 @@ function App() {
               )}
             </div>
 
+            {/* Period Comparison */}
+            <div className="mb-6">
+              <PeriodComparison data={filteredData} />
+            </div>
+
             {/* Export Section */}
             <div className="mb-6 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Export & Reporting</h3>
               <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={() => exportToCSV(filteredData, `provider-data-${new Date().toISOString().split('T')[0]}.csv`)}
+                  onClick={() => {
+                    exportToCSV(filteredData, `provider-data-${new Date().toISOString().split('T')[0]}.csv`);
+                    success('Data exported to CSV');
+                  }}
                   className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-lg transition-all"
                   aria-label="Export data to CSV"
                 >
                   Export to CSV
                 </button>
                 <button
-                  onClick={() => exportToPDF(filteredData, summaryStats)}
+                  onClick={() => {
+                    exportToPDF(filteredData, summaryStats);
+                    success('PDF report generated');
+                  }}
                   className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 rounded-lg transition-all"
                   aria-label="Export data to PDF"
                 >
@@ -535,11 +724,19 @@ function App() {
                     const blob = new Blob([html], { type: 'text/html' });
                     const url = URL.createObjectURL(blob);
                     window.open(url, '_blank');
+                    success('HTML report generated');
                   }}
                   className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 rounded-lg transition-all"
                   aria-label="Generate HTML report"
                 >
                   Generate HTML Report
+                </button>
+                <button
+                  onClick={() => setShowPrintView(true)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-lg transition-all"
+                  aria-label="Print view"
+                >
+                  Print View
                 </button>
               </div>
             </div>
@@ -572,7 +769,20 @@ function App() {
         onClose={() => setShowCommunication(null)}
       />
     )}
+
+    {/* Print View */}
+    {showPrintView && (
+      <PrintView
+        data={filteredData}
+        stats={summaryStats}
+        onClose={() => setShowPrintView(false)}
+      />
+    )}
+
+    {/* Toast Notifications */}
+    <ToastContainer toasts={toasts} onClose={removeToast} />
   </div>
+  </ErrorBoundary>
   );
 }
 
