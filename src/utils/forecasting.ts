@@ -31,17 +31,6 @@ function movingAverage(data: number[], window: number): number {
   return recent.reduce((sum, v) => sum + v, 0) / recent.length;
 }
 
-function _exponentialSmoothing(data: number[], alpha: number = 0.3): number {
-  if (data.length === 0) return 0;
-  if (data.length === 1) return data[0];
-  
-  let forecast = data[0];
-  for (let i = 1; i < data.length; i++) {
-    forecast = alpha * data[i] + (1 - alpha) * forecast;
-  }
-  return forecast;
-}
-
 export function forecastProvider(
   provider: string,
   data: ProviderWeekData[],
