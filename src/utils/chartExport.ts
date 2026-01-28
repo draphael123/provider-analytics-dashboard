@@ -27,7 +27,7 @@ export async function exportChartAsPNG(chartElement: HTMLElement, _filename: str
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = filename;
+            link.download = _filename;
             link.click();
             URL.revokeObjectURL(url);
             URL.revokeObjectURL(svgUrl);
@@ -43,7 +43,7 @@ export async function exportChartAsPNG(chartElement: HTMLElement, _filename: str
   }
 }
 
-export async function exportMultipleChartsAsPDF(charts: HTMLElement[], filename: string = 'dashboard-report.pdf') {
+export async function exportMultipleChartsAsPDF(charts: HTMLElement[], _filename: string = 'dashboard-report.pdf') {
   // For PDF export of multiple charts, we'll use a library like jsPDF
   // This is a simplified version that creates a printable HTML page
   const printWindow = window.open('', '_blank');
@@ -63,7 +63,7 @@ export async function exportMultipleChartsAsPDF(charts: HTMLElement[], filename:
       <body>
         <h1>Provider Analytics Dashboard Report</h1>
         <p>Generated: ${new Date().toLocaleString()}</p>
-        ${charts.map((chart, index) => {
+        ${charts.map((_chart, index) => {
           // Note: html2canvas would need to be imported and used here
           // For now, using a placeholder approach
           return `<div class="chart-container"><p>Chart ${index + 1}</p></div>`;

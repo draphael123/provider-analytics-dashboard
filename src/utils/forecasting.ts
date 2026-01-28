@@ -96,7 +96,6 @@ export function forecastProvider(
   // Try multiple methods and use the most appropriate
   const linear = linearRegression(values);
   const ma = movingAverage(values, Math.min(4, values.length));
-  const _exp = exponentialSmoothing(values);
 
   // Use linear regression if we have enough data points
   let method: 'linear' | 'moving_average' | 'exponential' = 'linear';
