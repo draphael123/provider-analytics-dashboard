@@ -96,7 +96,7 @@ export function forecastProvider(
   // Try multiple methods and use the most appropriate
   const linear = linearRegression(values);
   const ma = movingAverage(values, Math.min(4, values.length));
-  const exp = exponentialSmoothing(values);
+  const _exp = exponentialSmoothing(values);
 
   // Use linear regression if we have enough data points
   let method: 'linear' | 'moving_average' | 'exponential' = 'linear';
@@ -127,7 +127,7 @@ export function forecastProvider(
     'stable';
 
   // Calculate confidence based on data quality
-  const variance = values.reduce((sum, v, i) => {
+  const variance = values.reduce((sum, v, _i) => {
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
     return sum + Math.pow(v - mean, 2);
   }, 0) / values.length;

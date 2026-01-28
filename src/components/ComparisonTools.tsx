@@ -1,15 +1,13 @@
 import { useMemo } from 'react';
 import { ProviderWeekData } from '../types';
-import { BarChart } from './Charts/BarChart';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface ComparisonToolsProps {
   data: ProviderWeekData[];
   selectedProviders: string[];
-  onProviderSelect?: (provider: string) => void;
 }
 
-export function ComparisonTools({ data, selectedProviders, onProviderSelect }: ComparisonToolsProps) {
+export function ComparisonTools({ data, selectedProviders }: ComparisonToolsProps) {
   const [provider1, provider2] = selectedProviders.length >= 2 
     ? [selectedProviders[0], selectedProviders[1]]
     : selectedProviders.length === 1

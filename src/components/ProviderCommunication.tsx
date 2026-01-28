@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { MessageSquare, Send, Clock, User } from 'lucide-react';
 
 interface Message {

@@ -201,11 +201,9 @@ export function ProviderDetailView({ provider, data, allProviders, onClose, onSe
                 allProviders={allProviders}
                 showBenchmarks={true}
                 benchmarkValues={{
-                  percentOver20Min: {
-                    average: stats.percentOver20Min,
-                    median: stats.percentOver20Min,
-                    topQuartile: stats.percentOver20Min,
-                  },
+                  average: stats.percentOver20Min,
+                  median: stats.percentOver20Min,
+                  topQuartile: stats.percentOver20Min,
                 }}
               />
             ) : (
@@ -229,7 +227,7 @@ export function ProviderDetailView({ provider, data, allProviders, onClose, onSe
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                  {weeklyBreakdown.map((week, index) => (
+                  {weeklyBreakdown.map((week, _index) => (
                     <tr key={week.week} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{week.week}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{week.totalVisits.toLocaleString()}</td>

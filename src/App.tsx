@@ -66,8 +66,6 @@ function App() {
   const [selectedProviderDetail, setSelectedProviderDetail] = useState<string | null>(null);
   const [showCommunication, setShowCommunication] = useState<string | null>(null);
   const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false);
-  const [showForecasting, setShowForecasting] = useState(false);
-  const [showAnomalyDetection, setShowAnomalyDetection] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | undefined>(undefined);
   const [showPrintView, setShowPrintView] = useState(false);
   const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set());
@@ -150,6 +148,20 @@ function App() {
       minimumVisits,
     });
   }, [selectedProviders, weekRange, thresholdPercent, performanceTier, visitVolume, trend, minimumVisits]);
+
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      const parsedData = await loadDefaultExcelFile('/Doxy - Over 20 minutes (9).xlsx');
+      setData(parsedData);
+      setLastUpdated(new Date());
+      success('Data refreshed successfully');
+    } catch (err) {
+      error('Failed to refresh data. Please try uploading manually.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -494,7 +506,6 @@ function App() {
                 <ComparisonTools 
                   data={filteredData}
                   selectedProviders={selectedProviders}
-                  onProviderSelect={handleProviderSelect}
                 />
               </div>
             )}

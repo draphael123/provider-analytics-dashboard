@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ProviderWeekData } from '../types';
-import { calculateStatistics, calculateAllCorrelations, StatisticalSummary, Correlation } from '../utils/advancedAnalytics';
+import { calculateStatistics, calculateAllCorrelations, Correlation } from '../utils/advancedAnalytics';
 
 interface AdvancedAnalyticsProps {
   data: ProviderWeekData[];

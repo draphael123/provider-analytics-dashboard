@@ -53,7 +53,7 @@ export function detectAnomalies(data: ProviderWeekData[]): Anomaly[] {
       const stdDev = Math.sqrt(variance);
 
       // Detect outliers (values beyond 2 standard deviations)
-      sorted.forEach((weekData, index) => {
+      sorted.forEach((weekData, _index) => {
         const value = weekData[metric];
         const deviation = Math.abs(value - mean);
         const zScore = stdDev > 0 ? deviation / stdDev : 0;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Calendar, X } from 'lucide-react';
 import { ProviderWeekData } from '../../types';
 import { getUniqueWeeks, sortWeeks } from '../../utils/dataTransformer';
 
