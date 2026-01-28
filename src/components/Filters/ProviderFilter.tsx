@@ -47,6 +47,9 @@ export function ProviderFilter({ providers, selectedProviders, onSelectionChange
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="w-full px-4 py-2 text-left bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 flex items-center justify-between transition-colors"
+          aria-label="Select providers"
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
         >
           <span className="text-sm text-gray-700 dark:text-gray-300">
             {selectedProviders.length === 0
@@ -67,6 +70,8 @@ export function ProviderFilter({ providers, selectedProviders, onSelectionChange
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  aria-label="Search providers"
+                  role="searchbox"
                 />
               </div>
               <div className="flex gap-2 mt-2">

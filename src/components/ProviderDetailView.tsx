@@ -125,6 +125,7 @@ export function ProviderDetailView({ provider, data, allProviders, onClose, onSe
                 <button
                   onClick={() => onSendMessage?.(provider)}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors"
+                  aria-label={`Send message to ${provider}`}
                 >
                   <MessageSquare className="h-4 w-4" />
                   Send Message
@@ -133,6 +134,7 @@ export function ProviderDetailView({ provider, data, allProviders, onClose, onSe
               <button
                 onClick={onClose}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                aria-label="Close provider detail view"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -190,7 +192,7 @@ export function ProviderDetailView({ provider, data, allProviders, onClose, onSe
               <LineChart
                 data={sortWeeks(Array.from(new Set(providerData.map(d => d.week)))).map(week => {
                   const weekData = providerData.find(d => d.week === week);
-                  const dataPoint: any = { week };
+                  const dataPoint: Record<string, string | number | null> = { week };
                   dataPoint[provider] = weekData ? weekData.percentOver20Min : null;
                   return dataPoint;
                 })}

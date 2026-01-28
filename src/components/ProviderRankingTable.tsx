@@ -205,6 +205,15 @@ export function ProviderRankingTable({ data, onProviderSelect }: ProviderRanking
                   key={stat.provider}
                   className={`hover:bg-gray-50 cursor-pointer ${getPerformanceColor(stat.percentOver20Min)}`}
                   onClick={() => onProviderSelect?.(stat.provider)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onProviderSelect?.(stat.provider);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View details for ${stat.provider}`}
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                     #{index + 1}

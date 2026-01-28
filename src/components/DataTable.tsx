@@ -86,6 +86,7 @@ export function DataTable({ data, thresholdPercent = 20 }: DataTableProps) {
         <button
           onClick={handleExport}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-lg shadow-md hover:shadow-lg transition-all"
+          aria-label="Export data to CSV"
         >
           <Download className="h-4 w-4" />
           Export CSV

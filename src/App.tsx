@@ -32,6 +32,16 @@ import { PerformanceDistribution } from './components/PerformanceDistribution';
 import { InsightsPanel } from './components/InsightsPanel';
 import { HowItWorks } from './components/HowItWorks';
 import { ProviderDetailView } from './components/ProviderDetailView';
+import { FilterPresets } from './components/FilterPresets';
+import { CustomDateRangePicker } from './components/Filters/CustomDateRangePicker';
+import { ComparisonTools } from './components/ComparisonTools';
+import { ActionItems } from './components/ActionItems';
+import { ProviderCommunication } from './components/ProviderCommunication';
+import { AlertsPanel } from './components/AlertsPanel';
+import { AdvancedAnalytics } from './components/AdvancedAnalytics';
+import { ForecastingPanel } from './components/ForecastingPanel';
+import { AnomalyDetectionPanel } from './components/AnomalyDetectionPanel';
+import { exportToCSV, exportToPDF, generateReportHTML } from './utils/exportHelpers';
 
 function App() {
   const [data, setData] = useState<ProviderWeekData[]>([]);
@@ -41,6 +51,8 @@ function App() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [lineChartType, setLineChartType] = useState<'line' | 'area'>('line');
   const [selectedProviderDetail, setSelectedProviderDetail] = useState<string | null>(null);
+  const [showCommunication, setShowCommunication] = useState<string | null>(null);
+  const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false);
 
   const {
     filteredData,
@@ -244,7 +256,7 @@ function App() {
                     selectedProviders={selectedProviders}
                     onSelectionChange={setSelectedProviders}
                   />
-                  <WeekRangeFilter
+                  <CustomDateRangePicker
                     data={data}
                     weekRange={weekRange}
                     onRangeChange={setWeekRange}
@@ -286,6 +298,22 @@ function App() {
             <div className="mb-6">
               <InsightsPanel data={filteredData} />
             </div>
+
+            {/* Action Items */}
+            <div className="mb-6">
+              <ActionItems data={filteredData} />
+            </div>
+
+            {/* Comparison Tools */}
+            {selectedProviders.length > 0 && (
+              <div className="mb-6">
+                <ComparisonTools 
+                  data={filteredData}
+                  selectedProviders={selectedProviders}
+                  onProviderSelect={handleProviderSelect}
+                />
+              </div>
+            )}
 
             {/* Provider Ranking Table */}
             <div className="mb-6">
@@ -449,9 +477,17 @@ function App() {
         allProviders={allProviders}
         onClose={() => setSelectedProviderDetail(null)}
         onSendMessage={(provider) => {
-          // TODO: Implement provider communication
-          alert(`Send message to ${provider} - Feature coming soon!`);
+          setShowCommunication(provider);
+          setSelectedProviderDetail(null);
         }}
+      />
+    )}
+
+    {/* Provider Communication Modal */}
+    {showCommunication && (
+      <ProviderCommunication
+        provider={showCommunication}
+        onClose={() => setShowCommunication(null)}
       />
     )}
   </div>
