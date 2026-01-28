@@ -190,9 +190,9 @@ export function ProviderDetailView({ provider, data, allProviders, onClose, onSe
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Week-over-Week Performance</h3>
             {providerData.length > 0 ? (
               <LineChart
-                data={sortWeeks(Array.from(new Set(providerData.map(d => d.week)))).map(week => {
+                data={sortWeeks(Array.from(new Set(providerData.map(d => d.week)))).map((week): { week: string; [provider: string]: string | number | null } => {
                   const weekData = providerData.find(d => d.week === week);
-                  const dataPoint: Record<string, string | number | null> = { week };
+                  const dataPoint: { week: string; [provider: string]: string | number | null } = { week };
                   dataPoint[provider] = weekData ? weekData.percentOver20Min : null;
                   return dataPoint;
                 })}

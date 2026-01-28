@@ -31,7 +31,7 @@ function movingAverage(data: number[], window: number): number {
   return recent.reduce((sum, v) => sum + v, 0) / recent.length;
 }
 
-function exponentialSmoothing(data: number[], alpha: number = 0.3): number {
+function _exponentialSmoothing(data: number[], alpha: number = 0.3): number {
   if (data.length === 0) return 0;
   if (data.length === 1) return data[0];
   
