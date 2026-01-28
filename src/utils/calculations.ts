@@ -18,7 +18,33 @@ export function calculateSummaryStats(
   const uniqueProviders = new Set(data.map(d => d.provider));
   const totalProviders = uniqueProviders.size;
   
-  const totalVisits = data.reduce((sum, d) => sum + d.totalVisits, 0);
+  // Calculate total visits for the most recent week in the data
+  let totalVisits = 0;
+  if (data.length > 0) {
+    // Sort data by week chronologically to find the most recent week
+    const sorted = [...data].sort((a, b) => {
+      const weekA = a.week.match(/(\d{1,2})\/(\d{1,2})/);
+      const weekB = b.week.match(/(\d{1,2})\/(\d{1,2})/);
+      if (!weekA || !weekB) return a.week.localeCompare(b.week);
+      
+      const monthA = parseInt(weekA[1]);
+      const dayA = parseInt(weekA[2]);
+      const monthB = parseInt(weekB[1]);
+      const dayB = parseInt(weekB[2]);
+      
+      if (monthA !== monthB) return monthA - monthB;
+      return dayA - dayB;
+    });
+    
+    // Get the most recent week
+    const mostRecentWeek = sorted[sorted.length - 1].week;
+    
+    // Sum total visits for all providers in the most recent week
+    totalVisits = data
+      .filter(d => d.week === mostRecentWeek)
+      .reduce((sum, d) => sum + d.totalVisits, 0);
+  }
+  
   const avgPercentOver20Min = data.reduce((sum, d) => sum + d.percentOver20Min, 0) / data.length;
   
   let trend: 'up' | 'down' | 'neutral' = 'neutral';
