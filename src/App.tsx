@@ -50,7 +50,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { GlobalSearch } from './components/GlobalSearch';
 import { DataRefresh } from './components/DataRefresh';
 import { ShareButton } from './components/ShareButton';
-import { DataValidationWarnings } from './components/DataValidationWarnings';
 import { PeriodComparison } from './components/PeriodComparison';
 import { PrintView } from './components/PrintView';
 import { LoadingSkeleton } from './components/LoadingSkeleton';
@@ -68,7 +67,6 @@ function App() {
   const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | undefined>(undefined);
   const [showPrintView, setShowPrintView] = useState(false);
-  const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set());
   const [showSearch, setShowSearch] = useState(false);
   const lineChartRef = useRef<HTMLDivElement>(null);
   const barChartRef = useRef<HTMLDivElement>(null);
@@ -361,13 +359,6 @@ function App() {
           </div>
         ) : (
           <>
-            {/* Data Validation Warnings */}
-            <DataValidationWarnings
-              data={data}
-              onDismiss={handleDismissWarning}
-              dismissedWarnings={dismissedWarnings}
-            />
-
             {/* Filters Section */}
             <div className="mb-6">
               <div className="bg-gradient-to-br from-white to-indigo-50/30 dark:from-gray-900 dark:to-indigo-950/50 rounded-lg shadow-lg border-2 border-indigo-200 dark:border-indigo-800 p-6 transition-all">
