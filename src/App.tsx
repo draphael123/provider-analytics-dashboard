@@ -27,7 +27,6 @@ import { PieChart } from './components/Charts/PieChart';
 import { GoalProgressChart } from './components/Charts/GoalProgressChart';
 import { DataTable } from './components/DataTable';
 import { ProviderRankingTable } from './components/ProviderRankingTable';
-import { HeatmapChart } from './components/Charts/HeatmapChart';
 import { ProviderComparisonMatrix } from './components/ProviderComparisonMatrix';
 import { PerformanceDistribution } from './components/PerformanceDistribution';
 import { InsightsPanel } from './components/InsightsPanel';
@@ -432,15 +431,8 @@ function App() {
                   </div>
                 </div>
 
-            {/* Heatmap and Distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              {/* Heatmap */}
-              <HeatmapChart 
-                data={filteredData}
-                selectedProviders={selectedProviders}
-              />
-
-              {/* Performance Distribution */}
+            {/* Performance Distribution */}
+            <div className="mb-6">
               <PerformanceDistribution data={filteredData} />
             </div>
 
