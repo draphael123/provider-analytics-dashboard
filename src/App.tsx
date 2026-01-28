@@ -30,7 +30,6 @@ import { PieChart } from './components/Charts/PieChart';
 import { GoalProgressChart } from './components/Charts/GoalProgressChart';
 import { DataTable } from './components/DataTable';
 import { ProviderRankingTable } from './components/ProviderRankingTable';
-import { ProviderComparisonMatrix } from './components/ProviderComparisonMatrix';
 import { PerformanceDistribution } from './components/PerformanceDistribution';
 import { InsightsPanel } from './components/InsightsPanel';
 import { HowItWorks } from './components/HowItWorks';
@@ -505,16 +504,6 @@ function App() {
                 onProviderSelect={handleProviderSelect}
               />
             </div>
-
-            {/* Provider Comparison Matrix */}
-            {selectedProviders.length >= 2 && selectedProviders.length <= 4 && (
-              <div className="mb-6">
-                <ProviderComparisonMatrix 
-                  data={filteredData}
-                  selectedProviders={selectedProviders}
-                />
-              </div>
-            )}
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
