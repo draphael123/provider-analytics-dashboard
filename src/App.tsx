@@ -31,6 +31,7 @@ import { ProviderComparisonMatrix } from './components/ProviderComparisonMatrix'
 import { PerformanceDistribution } from './components/PerformanceDistribution';
 import { InsightsPanel } from './components/InsightsPanel';
 import { HowItWorks } from './components/HowItWorks';
+import { ProviderDetailView } from './components/ProviderDetailView';
 
 function App() {
   const [data, setData] = useState<ProviderWeekData[]>([]);
@@ -39,6 +40,7 @@ function App() {
   const [barChartMetric, setBarChartMetric] = useState<'totalVisits' | 'visitsOver20Min' | 'percentOver20Min'>('totalVisits');
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [lineChartType, setLineChartType] = useState<'line' | 'area'>('line');
+  const [selectedProviderDetail, setSelectedProviderDetail] = useState<string | null>(null);
 
   const {
     filteredData,
@@ -135,11 +137,7 @@ function App() {
   }, [filteredData]);
 
   const handleProviderSelect = (provider: string) => {
-    if (selectedProviders.includes(provider)) {
-      setSelectedProviders([provider]);
-    } else {
-      setSelectedProviders([provider]);
-    }
+    setSelectedProviderDetail(provider);
   };
 
   // Load default Excel file on mount
@@ -442,7 +440,21 @@ function App() {
           )}
         </div>
       </main>
-    </div>
+    
+    {/* Provider Detail View Modal */}
+    {selectedProviderDetail && (
+      <ProviderDetailView
+        provider={selectedProviderDetail}
+        data={filteredData}
+        allProviders={allProviders}
+        onClose={() => setSelectedProviderDetail(null)}
+        onSendMessage={(provider) => {
+          // TODO: Implement provider communication
+          alert(`Send message to ${provider} - Feature coming soon!`);
+        }}
+      />
+    )}
+  </div>
   );
 }
 
